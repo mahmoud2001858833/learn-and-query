@@ -90,7 +90,13 @@ function NewQuiz() {
 
       if (file) {
         setStatus("رفع الملف…");
-        storagePath = `${user.id}/${Date.now()}-${file.name}`;
+        const ext = file.name.includes(".") ? file.name.split(".").pop()!.toLowerCase() : "bin";
+        const base = file.name
+          .replace(/\.[^.]+$/, "")
+          .replace(/[^a-zA-Z0-9._-]+/g, "-")
+          .replace(/^-+|-+$/g, "")
+          .slice(0, 40);
+        storagePath = `${user.id}/${Date.now()}-${base || "file"}.${ext.replace(/[^a-z0-9]/g, "")}`;
         const upload = await supabase.storage.from("ak-documents").upload(storagePath, file);
         if (upload.error) throw upload.error;
         setProgress(20);
