@@ -29,7 +29,7 @@ export const Route = createFileRoute("/_authenticated/solve/$quizId")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: SolvePage;
+  component: SolvePage,
 });
 
 type QuestionRow = {
