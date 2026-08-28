@@ -158,13 +158,20 @@ function QuizEditor() {
     explanation: q.explanation,
   }));
 
+  const [exporting, setExporting] = useState<string | null>(null);
+
   const doExport = async (kind: "docx" | "pdf", withAnswers: boolean) => {
     const title = quiz.data?.title ?? "اختبار";
+    const key = `${kind}-${withAnswers}`;
+    setExporting(key);
     try {
       if (kind === "docx") await exportQuizDocx(title, exportRows, withAnswers);
-      else exportQuizPdf(title, exportRows, withAnswers);
+      else await exportQuizPdf(title, exportRows, withAnswers);
+      toast.success("تم تنزيل الملف");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "تعذّر التصدير");
+    } finally {
+      setExporting(null);
     }
   };
 
@@ -190,18 +197,32 @@ function QuizEditor() {
         </div>
 
         <section className="surface-card flex flex-wrap gap-2 p-4">
-          <Button variant="outline" size="sm" onClick={() => doExport("pdf", false)}>
-            <FileDown className="size-4" /> PDF أسئلة
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => doExport("pdf", true)}>
-            <FileDown className="size-4" /> PDF إجابات
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => doExport("docx", false)}>
-            <FileDown className="size-4" /> Word أسئلة
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => doExport("docx", true)}>
-            <FileDown className="size-4" /> Word إجابات
-          </Button>
+          {(
+            [
+              { kind: "pdf", answers: false, label: "PDF أسئلة" },
+              { kind: "pdf", answers: true, label: "PDF إجابات" },
+              { kind: "docx", answers: false, label: "Word أسئلة" },
+              { kind: "docx", answers: true, label: "Word إجابات" },
+            ] as const
+          ).map((item) => {
+            const key = `${item.kind}-${item.answers}`;
+            return (
+              <Button
+                key={key}
+                variant="outline"
+                size="sm"
+                disabled={exporting !== null}
+                onClick={() => doExport(item.kind, item.answers)}
+              >
+                {exporting === key ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <FileDown className="size-4" />
+                )}{" "}
+                {item.label}
+              </Button>
+            );
+          })}
         </section>
 
         {questions.isLoading ? (

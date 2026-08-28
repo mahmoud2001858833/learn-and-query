@@ -33,21 +33,24 @@ export function buildGeneratePrompt(input: {
   language: string;
   typeMix: Record<string, number>;
   customPrompt?: string | undefined;
+  avoid?: string[] | undefined;
 }): ChatMessage[] {
   const mix = Object.entries(input.typeMix)
     .filter(([, n]) => n > 0)
     .map(([type, n]) => `${TYPE_LABELS_AR[type as keyof typeof TYPE_LABELS_AR] ?? type} (${type}): ${n} سؤال`)
     .join("، ");
 
+  const avoidList = (input.avoid ?? []).slice(-60);
+
   return [
     {
       role: "system",
       content:
-        "أنت خبير في إعداد الاختبارات التعليمية. تقرأ المحتوى بعناية وتصمم أسئلة دقيقة مع إجابات وشروح صحيحة. تُجيب بـ JSON صالح فقط.",
+        "أنت خبير مناهج ومقيّم تعليمي محترف. تقرأ المحتوى بعمق، تفهم نية المستخدم من تعليماته الحرة وتنفّذها بحذافيرها (الفصل المطلوب، الموضوع، الأسلوب، صيغة السؤال). توزّع الأسئلة على مستويات بلوم (تذكّر، فهم، تطبيق، تحليل)، تصيغ مشتّتات منطقية غير واضحة الخطأ في أسئلة الاختيار من متعدد، تتأكد أن كل إجابة صحيحة فعلًا ومستندة إلى النص، وتكتب شرحًا يذكر موضع الفكرة في المحتوى. لا تخرج عن المحتوى المرفق ولا تكرّر سؤالًا. تُجيب بـ JSON صالح فقط.",
     },
     {
       role: "user",
-      content: `المحتوى:\n"""\n${input.text}\n"""\n\nالمطلوب: ${input.count} سؤالًا بلغة ${input.language === "en" ? "الإنجليزية" : "العربية"}، مستوى الصعوبة: ${input.difficulty}.\nتوزيع الأنواع: ${mix || "وزّعها بشكل متوازن"}.\n${input.customPrompt ? `تعليمات إضافية من المستخدم: ${input.customPrompt}\n` : ""}\n${SCHEMA_NOTE}`,
+      content: `المحتوى:\n"""\n${input.text}\n"""\n\nالمطلوب: ${input.count} سؤالًا بلغة ${input.language === "en" ? "الإنجليزية" : "العربية"}، مستوى الصعوبة: ${input.difficulty}.\nتوزيع الأنواع: ${mix || "وزّعها بشكل متوازن"}.\n${input.customPrompt ? `تعليمات المستخدم (أعلى أولوية، التزم بها حرفيًا): ${input.customPrompt}\n` : ""}${avoidList.length ? `أسئلة موجودة سابقًا، لا تكرّرها ولا تعد صياغتها:\n- ${avoidList.join("\n- ")}\n` : ""}\n${SCHEMA_NOTE}`,
     },
   ];
 }
