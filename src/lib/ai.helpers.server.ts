@@ -32,7 +32,7 @@ export function buildGeneratePrompt(input: {
   difficulty: string;
   language: string;
   typeMix: Record<string, number>;
-  customPrompt?: string;
+  customPrompt?: string | undefined;
 }): ChatMessage[] {
   const mix = Object.entries(input.typeMix)
     .filter(([, n]) => n > 0)
@@ -57,7 +57,7 @@ export function buildSinglePrompt(input: {
   type: string;
   difficulty: string;
   language: string;
-  avoid?: string;
+  avoid?: string | undefined;
 }): ChatMessage[] {
   return [
     { role: "system", content: "أنت خبير إعداد اختبارات. تُجيب بـ JSON صالح فقط." },
