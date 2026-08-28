@@ -158,13 +158,20 @@ function QuizEditor() {
     explanation: q.explanation,
   }));
 
+  const [exporting, setExporting] = useState<string | null>(null);
+
   const doExport = async (kind: "docx" | "pdf", withAnswers: boolean) => {
     const title = quiz.data?.title ?? "اختبار";
+    const key = `${kind}-${withAnswers}`;
+    setExporting(key);
     try {
       if (kind === "docx") await exportQuizDocx(title, exportRows, withAnswers);
-      else exportQuizPdf(title, exportRows, withAnswers);
+      else await exportQuizPdf(title, exportRows, withAnswers);
+      toast.success("تم تنزيل الملف");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "تعذّر التصدير");
+    } finally {
+      setExporting(null);
     }
   };
 
