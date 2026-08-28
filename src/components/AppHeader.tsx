@@ -3,7 +3,7 @@ import { BookOpenCheck, LogOut, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
-export function AppHeader({ email }: { email?: string | null }) {
+export function AppHeader({ email }: { email?: string | null | undefined }) {
   const router = useRouter();
 
   const signOut = async () => {

@@ -46,7 +46,7 @@ export const generateQuestions = createServerFn({ method: "POST" })
       difficulty: string;
       language: string;
       typeMix: Record<string, number>;
-      customPrompt?: string;
+      customPrompt?: string | undefined;
     }) => {
       if (!data.text || data.text.trim().length < 40) {
         throw new Error("النص المستخرج قصير جدًا لتوليد أسئلة");
