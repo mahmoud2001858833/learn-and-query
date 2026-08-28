@@ -180,6 +180,255 @@ export type Database = {
           },
         ]
       }
+      ak_answers: {
+        Row: {
+          answer_text: string | null
+          attempt_id: string
+          created_at: string
+          feedback: string | null
+          id: string
+          is_correct: boolean | null
+          question_id: string
+          score: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answer_text?: string | null
+          attempt_id: string
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          is_correct?: boolean | null
+          question_id: string
+          score?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answer_text?: string | null
+          attempt_id?: string
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          is_correct?: boolean | null
+          question_id?: string
+          score?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ak_answers_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "ak_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ak_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "ak_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ak_attempts: {
+        Row: {
+          created_at: string
+          id: string
+          max_score: number
+          quiz_id: string
+          score: number
+          started_at: string
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          max_score?: number
+          quiz_id: string
+          score?: number
+          started_at?: string
+          submitted_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          max_score?: number
+          quiz_id?: string
+          score?: number
+          started_at?: string
+          submitted_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ak_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "ak_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ak_documents: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          extracted_text: string | null
+          file_name: string | null
+          id: string
+          mime_type: string | null
+          size_bytes: number | null
+          status: string
+          storage_path: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          extracted_text?: string | null
+          file_name?: string | null
+          id?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          status?: string
+          storage_path?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          extracted_text?: string | null
+          file_name?: string | null
+          id?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          status?: string
+          storage_path?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ak_questions: {
+        Row: {
+          correct_answer: string | null
+          created_at: string
+          explanation: string | null
+          id: string
+          options: Json
+          order_index: number
+          points: number
+          prompt: string
+          quiz_id: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          correct_answer?: string | null
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          options?: Json
+          order_index?: number
+          points?: number
+          prompt: string
+          quiz_id: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          correct_answer?: string | null
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          options?: Json
+          order_index?: number
+          points?: number
+          prompt?: string
+          quiz_id?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ak_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "ak_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ak_quizzes: {
+        Row: {
+          created_at: string
+          custom_prompt: string | null
+          difficulty: string
+          document_id: string | null
+          id: string
+          language: string
+          question_count: number
+          status: string
+          title: string
+          type_mix: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          custom_prompt?: string | null
+          difficulty?: string
+          document_id?: string | null
+          id?: string
+          language?: string
+          question_count?: number
+          status?: string
+          title: string
+          type_mix?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          custom_prompt?: string | null
+          difficulty?: string
+          document_id?: string | null
+          id?: string
+          language?: string
+          question_count?: number
+          status?: string
+          title?: string
+          type_mix?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ak_quizzes_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "ak_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assignment_submissions: {
         Row: {
           assignment_id: string
