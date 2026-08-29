@@ -97,7 +97,8 @@ function Dashboard() {
                       {new Date(quiz.created_at).toLocaleDateString("ar")}
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
+                    <CopyQuizLinkButton quizId={quiz.id} />
                     <Button asChild size="sm" variant="outline">
                       <Link to="/quiz/$quizId" params={{ quizId: quiz.id }}>
                         <PenLine className="size-4" />
