@@ -183,6 +183,20 @@ function Dashboard() {
                       <tr key={attempt.id} className="border-b border-border/60 last:border-0">
                         <td className="py-3 font-medium text-foreground">{quizTitle}</td>
                         <td className="py-3 text-muted-foreground">
+                          {attempt.guest_name ? (
+                            <span className="text-foreground">
+                              {attempt.guest_name}
+                              {attempt.guest_phone ? (
+                                <span className="block text-xs text-muted-foreground" dir="ltr">
+                                  {attempt.guest_phone}
+                                </span>
+                              ) : null}
+                            </span>
+                          ) : (
+                            "أنا"
+                          )}
+                        </td>
+                        <td className="py-3 text-muted-foreground">
                           {attempt.submitted_at
                             ? new Date(attempt.submitted_at).toLocaleString("ar")
                             : ""}
