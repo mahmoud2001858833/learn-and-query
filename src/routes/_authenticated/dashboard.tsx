@@ -146,33 +146,73 @@ function Dashboard() {
             )}
           </section>
 
-          <section className="surface-card p-6">
-            <h2 className="flex items-center gap-2 font-semibold text-foreground">
-              <Trophy className="size-5 text-accent" />
-              نتائجي السابقة
-            </h2>
-            {attempts.isLoading ? (
-              <Skeleton className="mt-4 h-16 w-full" />
-            ) : attempts.data?.length ? (
-              <ul className="mt-4 space-y-3">
-                {attempts.data.map((attempt) => (
-                  <li key={attempt.id} className="flex items-center justify-between gap-3 text-sm">
-                    <span className="text-muted-foreground">
-                      {attempt.submitted_at
-                        ? new Date(attempt.submitted_at).toLocaleString("ar")
-                        : ""}
-                    </span>
-                    <span className="font-semibold text-foreground">
-                      {attempt.score} / {attempt.max_score}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-4 text-sm text-muted-foreground">لا توجد محاولات مكتملة بعد.</p>
-            )}
-          </section>
         </div>
+
+        <section className="surface-card p-6">
+          <h2 className="flex items-center gap-2 font-semibold text-foreground">
+            <Trophy className="size-5 text-accent" />
+            نتائج الامتحانات
+          </h2>
+          {attempts.isLoading ? (
+            <Skeleton className="mt-4 h-24 w-full" />
+          ) : attempts.data?.length ? (
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full text-right text-sm">
+                <thead>
+                  <tr className="border-b border-border text-xs text-muted-foreground">
+                    <th className="py-2 font-medium">الاختبار</th>
+                    <th className="py-2 font-medium">التاريخ</th>
+                    <th className="py-2 font-medium">الدرجة</th>
+                    <th className="py-2 font-medium">النسبة</th>
+                    <th className="py-2 font-medium"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {attempts.data.map((attempt) => {
+                    const quizTitle =
+                      (attempt as { ak_quizzes?: { title?: string } | null }).ak_quizzes?.title ??
+                      "اختبار";
+                    const max = attempt.max_score || 0;
+                    const pct = max > 0 ? Math.round(((attempt.score ?? 0) / max) * 100) : 0;
+                    return (
+                      <tr key={attempt.id} className="border-b border-border/60 last:border-0">
+                        <td className="py-3 font-medium text-foreground">{quizTitle}</td>
+                        <td className="py-3 text-muted-foreground">
+                          {attempt.submitted_at
+                            ? new Date(attempt.submitted_at).toLocaleString("ar")
+                            : ""}
+                        </td>
+                        <td className="py-3 font-semibold text-foreground">
+                          {attempt.score} / {attempt.max_score}
+                        </td>
+                        <td className="py-3">
+                          <span
+                            className={
+                              pct >= 50
+                                ? "font-semibold text-accent"
+                                : "font-semibold text-destructive"
+                            }
+                          >
+                            {pct}%
+                          </span>
+                        </td>
+                        <td className="py-3">
+                          <Button asChild size="sm" variant="ghost">
+                            <Link to="/solve/$quizId" params={{ quizId: attempt.quiz_id }}>
+                              إعادة الحل
+                            </Link>
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-muted-foreground">لا توجد محاولات مكتملة بعد.</p>
+          )}
+        </section>
       </main>
     </div>
   );
