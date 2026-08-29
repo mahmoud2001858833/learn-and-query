@@ -1,6 +1,9 @@
 // Server-only helpers for Lovable AI Gateway calls.
 
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
+// OpenAI fallback model when using a direct OpenAI key instead of the Lovable gateway.
+const OPENAI_FALLBACK_MODEL = "gpt-4o-mini";
 
 export type ChatContent =
   | string
