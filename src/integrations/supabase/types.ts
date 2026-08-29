@@ -3203,14 +3203,14 @@ export type Database = {
         Returns: number
       }
       ak_get_public_quiz: { Args: { _quiz_id: string }; Returns: Json }
-      ak_save_public_attempt: {
+      ak_submit_public_attempt: {
         Args: {
+          _answers: Json
           _guest_name: string
           _guest_phone: string
           _quiz_id: string
-          _results: Json
         }
-        Returns: string
+        Returns: Json
       }
       ak_user_id_by_email: { Args: { _email: string }; Returns: string }
       apply_to_tenant: {
