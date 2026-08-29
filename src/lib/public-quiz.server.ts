@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/integrations/supabase/types";
+import { SUPABASE_PUBLIC_KEY, SUPABASE_PUBLIC_URL } from "@/integrations/supabase/config";
 
 export type PublicQuestion = {
   id: string;
@@ -31,10 +32,14 @@ export type PublicAttemptResult = {
 };
 
 function publicClient() {
-  const url = process.env["SUPABASE_URL"] || import.meta.env["VITE_SUPABASE_URL"];
+  const url =
+    process.env["SUPABASE_URL"] ||
+    import.meta.env["VITE_SUPABASE_URL"] ||
+    SUPABASE_PUBLIC_URL;
   const key =
     process.env["SUPABASE_PUBLISHABLE_KEY"] ||
-    import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
+    import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] ||
+    SUPABASE_PUBLIC_KEY;
   if (!url || !key) throw new Error("إعدادات الاتصال بقاعدة البيانات غير متوفرة");
 
   return createClient<Database>(url, key, {
