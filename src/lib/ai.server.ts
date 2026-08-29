@@ -193,9 +193,66 @@ export function parseJson<T>(raw: string): T {
       }
     }
   }
+
+  // Last resort: salvage whatever complete objects exist inside the array
+  // (handles heavily malformed or truncated responses).
+  for (const key of ["questions", "results"] as const) {
+    const idx = cleaned.indexOf(`"${key}"`);
+    if (idx === -1) continue;
+    const arrStart = cleaned.indexOf("[", idx);
+    if (arrStart === -1) continue;
+    const items = salvageObjects(escapeControlCharsInStrings(cleaned.slice(arrStart)));
+    if (items.length) return { [key]: items } as T;
+  }
+
   console.error("[ai-parse] unparsable response tail:", cleaned.slice(-400));
-  throw new AiError("جاء رد غير صالح من الذكاء الاصطناعي. حاول مرة أخرى.", 500);
+  throw new AiError(
+    raw.trim().length === 0
+      ? "لم يرجع الذكاء الاصطناعي أي محتوى. حاول مرة أخرى بعدد أسئلة أقل."
+      : "جاء رد غير صالح من الذكاء الاصطناعي. حاول مرة أخرى.",
+    500,
+  );
 }
+
+// Scan a JSON array body and JSON.parse each balanced top-level object,
+// skipping any incomplete or invalid ones.
+function salvageObjects(input: string): unknown[] {
+  const out: unknown[] = [];
+  let depth = 0;
+  let startIdx = -1;
+  let inString = false;
+  let escaped = false;
+  for (let i = 0; i < input.length; i++) {
+    const c = input[i]!;
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (inString) {
+      if (c === "\\") escaped = true;
+      else if (c === '"') inString = false;
+      continue;
+    }
+    if (c === '"') inString = true;
+    else if (c === "{") {
+      if (depth === 0) startIdx = i;
+      depth++;
+    } else if (c === "}") {
+      depth--;
+      if (depth === 0 && startIdx !== -1) {
+        try {
+          out.push(JSON.parse(input.slice(startIdx, i + 1)));
+        } catch {
+          // skip invalid object
+        }
+        startIdx = -1;
+      }
+      if (depth < 0) break;
+    } else if (c === "]" && depth === 0) break;
+  }
+  return out;
+}
+
 
 
 export const QUESTION_TYPES = ["mcq", "true_false", "short", "essay", "fill_blank"] as const;
