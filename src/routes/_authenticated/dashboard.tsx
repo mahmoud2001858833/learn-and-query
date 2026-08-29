@@ -99,6 +99,7 @@ function Dashboard() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <CopyQuizLinkButton quizId={quiz.id} />
+                    <SendQuizDialog quizId={quiz.id} />
                     <Button asChild size="sm" variant="outline">
                       <Link to="/quiz/$quizId" params={{ quizId: quiz.id }}>
                         <PenLine className="size-4" />
