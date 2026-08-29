@@ -191,6 +191,7 @@ function QuizEditor() {
           </div>
           <div className="flex flex-wrap gap-2">
             <CopyQuizLinkButton quizId={quizId} variant="secondary" size="default" />
+            <SendQuizDialog quizId={quizId} size="default" variant="outline" />
             <Button asChild>
               <Link to="/solve/$quizId" params={{ quizId }}>
                 <PlayCircle className="size-4" />
