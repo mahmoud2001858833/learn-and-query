@@ -65,15 +65,37 @@ export async function exportQuizDocx(
 
 const ARABIC_LETTERS = ["أ", "ب", "ج", "د", "هـ", "و", "ز", "ح"];
 
-function ensureFontLink() {
-  const id = "ak-pdf-font";
-  if (document.getElementById(id)) return;
-  const link = document.createElement("link");
-  link.id = id;
-  link.rel = "stylesheet";
-  link.href =
-    "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap";
-  document.head.appendChild(link);
+/** Builds an isolated iframe document containing only the sheet CSS.
+ *  html2canvas cannot parse oklch() colors used by the app's Tailwind theme,
+ *  so the sheet must render in a clean document without app stylesheets. */
+async function renderInIsolatedFrame(html: string): Promise<{
+  element: HTMLElement;
+  cleanup: () => void;
+}> {
+  const iframe = document.createElement("iframe");
+  iframe.style.cssText =
+    "position:fixed;top:0;left:-20000px;width:900px;height:1200px;border:0;z-index:-1";
+  iframe.srcdoc = `<!DOCTYPE html><html dir="rtl" lang="ar"><head>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>html,body{margin:0;padding:0;background:#fff}${SHEET_CSS}</style>
+</head><body>${html}</body></html>`;
+  document.body.appendChild(iframe);
+
+  await new Promise<void>((resolve) => {
+    iframe.onload = () => resolve();
+    setTimeout(resolve, 3000);
+  });
+
+  const doc = iframe.contentDocument!;
+  if (doc.fonts?.ready) await doc.fonts.ready.catch(() => undefined);
+  await new Promise((r) => setTimeout(r, 350));
+
+  const element = doc.querySelector<HTMLElement>(".sheet");
+  if (!element) {
+    iframe.remove();
+    throw new Error("تعذّر تجهيز ورقة التصدير");
+  }
+  return { element, cleanup: () => iframe.remove() };
 }
 
 function buildSheetHtml(title: string, questions: ExportQuestion[], withAnswers: boolean) {
@@ -169,21 +191,12 @@ export async function exportQuizPdf(
     import("jspdf"),
   ]);
 
-  ensureFontLink();
-  const style = document.createElement("style");
-  style.textContent = SHEET_CSS;
-  const host = document.createElement("div");
-  host.setAttribute("dir", "rtl");
-  host.style.cssText = "position:fixed;top:0;left:-20000px;width:794px;background:#fff;z-index:-1";
-  host.innerHTML = buildSheetHtml(title, questions, withAnswers);
-  document.head.appendChild(style);
-  document.body.appendChild(host);
+  const { element, cleanup } = await renderInIsolatedFrame(
+    buildSheetHtml(title, questions, withAnswers),
+  );
 
   try {
-    if (document.fonts?.ready) await document.fonts.ready;
-    await new Promise((r) => setTimeout(r, 250));
-
-    const canvas = await html2canvas(host.firstElementChild as HTMLElement, {
+    const canvas = await html2canvas(element, {
       scale: 2,
       backgroundColor: "#ffffff",
       useCORS: true,
@@ -220,8 +233,7 @@ export async function exportQuizPdf(
 
     pdf.save(`${title}${withAnswers ? "-الإجابات" : "-الأسئلة"}.pdf`);
   } finally {
-    host.remove();
-    style.remove();
+    cleanup();
   }
 }
 
