@@ -14,8 +14,8 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedNewRouteImport } from './routes/_authenticated/new'
+import { Route as SolveQuizIdRouteImport } from './routes/solve.$quizId'
 import { Route as AuthenticatedQuizQuizIdRouteImport } from './routes/_authenticated/quiz.$quizId'
-import { Route as AuthenticatedSolveQuizIdRouteImport } from './routes/_authenticated/solve.$quizId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -41,33 +41,32 @@ const AuthenticatedNewRoute = AuthenticatedNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const SolveQuizIdRoute = SolveQuizIdRouteImport.update({
+  id: '/solve/$quizId',
+  path: '/solve/$quizId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedQuizQuizIdRoute = AuthenticatedQuizQuizIdRouteImport.update({
   id: '/quiz/$quizId',
   path: '/quiz/$quizId',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedSolveQuizIdRoute =
-  AuthenticatedSolveQuizIdRouteImport.update({
-    id: '/solve/$quizId',
-    path: '/solve/$quizId',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/new': typeof AuthenticatedNewRoute
+  '/solve/$quizId': typeof SolveQuizIdRoute
   '/quiz/$quizId': typeof AuthenticatedQuizQuizIdRoute
-  '/solve/$quizId': typeof AuthenticatedSolveQuizIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/new': typeof AuthenticatedNewRoute
+  '/solve/$quizId': typeof SolveQuizIdRoute
   '/quiz/$quizId': typeof AuthenticatedQuizQuizIdRoute
-  '/solve/$quizId': typeof AuthenticatedSolveQuizIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -76,15 +75,15 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/new': typeof AuthenticatedNewRoute
+  '/solve/$quizId': typeof SolveQuizIdRoute
   '/_authenticated/quiz/$quizId': typeof AuthenticatedQuizQuizIdRoute
-  '/_authenticated/solve/$quizId': typeof AuthenticatedSolveQuizIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/dashboard' | '/new' | '/quiz/$quizId' | '/solve/$quizId'
+    '/' | '/auth' | '/dashboard' | '/new' | '/solve/$quizId' | '/quiz/$quizId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard' | '/new' | '/quiz/$quizId' | '/solve/$quizId'
+  to: '/' | '/auth' | '/dashboard' | '/new' | '/solve/$quizId' | '/quiz/$quizId'
   id:
     | '__root__'
     | '/'
@@ -92,14 +91,15 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/dashboard'
     | '/_authenticated/new'
+    | '/solve/$quizId'
     | '/_authenticated/quiz/$quizId'
-    | '/_authenticated/solve/$quizId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  SolveQuizIdRoute: typeof SolveQuizIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -139,18 +139,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/solve/$quizId': {
+      id: '/solve/$quizId'
+      path: '/solve/$quizId'
+      fullPath: '/solve/$quizId'
+      preLoaderRoute: typeof SolveQuizIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/quiz/$quizId': {
       id: '/_authenticated/quiz/$quizId'
       path: '/quiz/$quizId'
       fullPath: '/quiz/$quizId'
       preLoaderRoute: typeof AuthenticatedQuizQuizIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/solve/$quizId': {
-      id: '/_authenticated/solve/$quizId'
-      path: '/solve/$quizId'
-      fullPath: '/solve/$quizId'
-      preLoaderRoute: typeof AuthenticatedSolveQuizIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }
@@ -160,14 +160,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedNewRoute: typeof AuthenticatedNewRoute
   AuthenticatedQuizQuizIdRoute: typeof AuthenticatedQuizQuizIdRoute
-  AuthenticatedSolveQuizIdRoute: typeof AuthenticatedSolveQuizIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedNewRoute: AuthenticatedNewRoute,
   AuthenticatedQuizQuizIdRoute: AuthenticatedQuizQuizIdRoute,
-  AuthenticatedSolveQuizIdRoute: AuthenticatedSolveQuizIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -177,6 +175,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  SolveQuizIdRoute: SolveQuizIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -55,7 +55,9 @@ function Dashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("ak_attempts")
-        .select("id, quiz_id, score, max_score, submitted_at, ak_quizzes(title)")
+        .select(
+          "id, quiz_id, score, max_score, submitted_at, guest_name, guest_phone, ak_quizzes(title)",
+        )
         .not("submitted_at", "is", null)
         .order("submitted_at", { ascending: false })
         .limit(50);
@@ -163,6 +165,7 @@ function Dashboard() {
                 <thead>
                   <tr className="border-b border-border text-xs text-muted-foreground">
                     <th className="py-2 font-medium">الاختبار</th>
+                    <th className="py-2 font-medium">الطالب</th>
                     <th className="py-2 font-medium">التاريخ</th>
                     <th className="py-2 font-medium">الدرجة</th>
                     <th className="py-2 font-medium">النسبة</th>
@@ -179,6 +182,20 @@ function Dashboard() {
                     return (
                       <tr key={attempt.id} className="border-b border-border/60 last:border-0">
                         <td className="py-3 font-medium text-foreground">{quizTitle}</td>
+                        <td className="py-3 text-muted-foreground">
+                          {attempt.guest_name ? (
+                            <span className="text-foreground">
+                              {attempt.guest_name}
+                              {attempt.guest_phone ? (
+                                <span className="block text-xs text-muted-foreground" dir="ltr">
+                                  {attempt.guest_phone}
+                                </span>
+                              ) : null}
+                            </span>
+                          ) : (
+                            "أنا"
+                          )}
+                        </td>
                         <td className="py-3 text-muted-foreground">
                           {attempt.submitted_at
                             ? new Date(attempt.submitted_at).toLocaleString("ar")
