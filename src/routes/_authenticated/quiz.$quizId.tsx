@@ -5,6 +5,7 @@ import { useState } from "react";
 import { FileDown, Loader2, PlayCircle, RefreshCw, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppHeader } from "@/components/AppHeader";
+import { CopyQuizLinkButton } from "@/components/CopyQuizLinkButton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -188,12 +189,15 @@ function QuizEditor() {
               {questions.data?.length ?? 0} سؤال · يمكنك التعديل أو الحذف أو إعادة التوليد.
             </p>
           </div>
-          <Button asChild>
-            <Link to="/solve/$quizId" params={{ quizId }}>
-              <PlayCircle className="size-4" />
-              حل إلكتروني
-            </Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <CopyQuizLinkButton quizId={quizId} variant="secondary" size="default" />
+            <Button asChild>
+              <Link to="/solve/$quizId" params={{ quizId }}>
+                <PlayCircle className="size-4" />
+                حل إلكتروني
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <section className="surface-card flex flex-wrap gap-2 p-4">
