@@ -165,6 +165,7 @@ function Dashboard() {
                 <thead>
                   <tr className="border-b border-border text-xs text-muted-foreground">
                     <th className="py-2 font-medium">الاختبار</th>
+                    <th className="py-2 font-medium">الطالب</th>
                     <th className="py-2 font-medium">التاريخ</th>
                     <th className="py-2 font-medium">الدرجة</th>
                     <th className="py-2 font-medium">النسبة</th>
