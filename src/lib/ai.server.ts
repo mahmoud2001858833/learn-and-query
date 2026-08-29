@@ -23,7 +23,15 @@ export class AiError extends Error {
 }
 
 async function callGateway(body: Record<string, unknown>): Promise<string> {
-  const apiKey = process.env["LOVABLE_API_KEY"];
+  let apiKey = process.env["LOVABLE_API_KEY"];
+  let url = GATEWAY_URL;
+  const openAiKey = process.env["OPENAI_API_KEY"];
+  if (!apiKey && openAiKey) {
+    apiKey = openAiKey;
+    url = OPENAI_URL;
+    // The Lovable gateway accepts "vendor/model" ids; direct OpenAI needs a plain model id.
+    if (typeof body.model === "string") body.model = OPENAI_FALLBACK_MODEL;
+  }
   if (!apiKey) throw new AiError("مفتاح الذكاء الاصطناعي غير مهيأ", 500);
 
   const res = await fetch(GATEWAY_URL, {
