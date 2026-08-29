@@ -191,21 +191,12 @@ export async function exportQuizPdf(
     import("jspdf"),
   ]);
 
-  ensureFontLink();
-  const style = document.createElement("style");
-  style.textContent = SHEET_CSS;
-  const host = document.createElement("div");
-  host.setAttribute("dir", "rtl");
-  host.style.cssText = "position:fixed;top:0;left:-20000px;width:794px;background:#fff;z-index:-1";
-  host.innerHTML = buildSheetHtml(title, questions, withAnswers);
-  document.head.appendChild(style);
-  document.body.appendChild(host);
+  const { element, cleanup } = await renderInIsolatedFrame(
+    buildSheetHtml(title, questions, withAnswers),
+  );
 
   try {
-    if (document.fonts?.ready) await document.fonts.ready;
-    await new Promise((r) => setTimeout(r, 250));
-
-    const canvas = await html2canvas(host.firstElementChild as HTMLElement, {
+    const canvas = await html2canvas(element, {
       scale: 2,
       backgroundColor: "#ffffff",
       useCORS: true,
