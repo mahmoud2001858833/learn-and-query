@@ -143,7 +143,7 @@ function repairTruncatedJson(input: string): string {
   // Drop a partial trailing element when we're inside an array.
   if (lastSafe > 0 && stack.includes("[")) {
     const trimmed = out.slice(0, lastSafe);
-    let depth: string[] = [];
+    const depth: string[] = [];
     let s = false;
     let e = false;
     for (const c of trimmed) {
