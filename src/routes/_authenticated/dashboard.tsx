@@ -55,7 +55,9 @@ function Dashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("ak_attempts")
-        .select("id, quiz_id, score, max_score, submitted_at, ak_quizzes(title)")
+        .select(
+          "id, quiz_id, score, max_score, submitted_at, guest_name, guest_phone, ak_quizzes(title)",
+        )
         .not("submitted_at", "is", null)
         .order("submitted_at", { ascending: false })
         .limit(50);
