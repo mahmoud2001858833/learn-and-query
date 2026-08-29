@@ -6,6 +6,7 @@ import { FileDown, Loader2, PlayCircle, RefreshCw, Save, Trash2 } from "lucide-r
 import { toast } from "sonner";
 import { AppHeader } from "@/components/AppHeader";
 import { CopyQuizLinkButton } from "@/components/CopyQuizLinkButton";
+import { SendQuizDialog } from "@/components/SendQuizDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
