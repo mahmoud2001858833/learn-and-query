@@ -1,6 +1,9 @@
 // Server-only helpers for Lovable AI Gateway calls.
 
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
+// OpenAI fallback model when using a direct OpenAI key instead of the Lovable gateway.
+const OPENAI_FALLBACK_MODEL = "gpt-4o-mini";
 
 export type ChatContent =
   | string
@@ -20,10 +23,18 @@ export class AiError extends Error {
 }
 
 async function callGateway(body: Record<string, unknown>): Promise<string> {
-  const apiKey = process.env["LOVABLE_API_KEY"];
+  let apiKey = process.env["LOVABLE_API_KEY"];
+  let url = GATEWAY_URL;
+  const openAiKey = process.env["OPENAI_API_KEY"];
+  if (!apiKey && openAiKey) {
+    apiKey = openAiKey;
+    url = OPENAI_URL;
+    // The Lovable gateway accepts "vendor/model" ids; direct OpenAI needs a plain model id.
+    if (typeof body["model"] === "string") body["model"] = OPENAI_FALLBACK_MODEL;
+  }
   if (!apiKey) throw new AiError("مفتاح الذكاء الاصطناعي غير مهيأ", 500);
 
-  const res = await fetch(GATEWAY_URL, {
+  const res = await fetch(url, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
