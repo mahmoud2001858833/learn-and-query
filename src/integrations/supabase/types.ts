@@ -3202,6 +3202,16 @@ export type Database = {
         Args: { _quota_bytes: number; _tenant_id: string }
         Returns: number
       }
+      ak_get_public_quiz: { Args: { _quiz_id: string }; Returns: Json }
+      ak_submit_public_attempt: {
+        Args: {
+          _answers: Json
+          _guest_name: string
+          _guest_phone: string
+          _quiz_id: string
+        }
+        Returns: Json
+      }
       ak_user_id_by_email: { Args: { _email: string }; Returns: string }
       apply_to_tenant: {
         Args: {
