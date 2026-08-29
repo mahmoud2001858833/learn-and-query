@@ -233,8 +233,7 @@ export async function exportQuizPdf(
 
     pdf.save(`${title}${withAnswers ? "-الإجابات" : "-الأسئلة"}.pdf`);
   } finally {
-    host.remove();
-    style.remove();
+    cleanup();
   }
 }
 
