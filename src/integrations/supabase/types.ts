@@ -3196,6 +3196,7 @@ export type Database = {
         Args: { _quota_bytes: number; _tenant_id: string }
         Returns: number
       }
+      ak_user_id_by_email: { Args: { _email: string }; Returns: string }
       apply_to_tenant: {
         Args: {
           _desired_role: Database["public"]["Enums"]["tenant_role"]

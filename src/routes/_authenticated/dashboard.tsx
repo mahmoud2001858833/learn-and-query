@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { FileText, ListChecks, PenLine, PlayCircle, Trophy } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { CopyQuizLinkButton } from "@/components/CopyQuizLinkButton";
+import { SendQuizDialog } from "@/components/SendQuizDialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
@@ -99,6 +100,7 @@ function Dashboard() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <CopyQuizLinkButton quizId={quiz.id} />
+                    <SendQuizDialog quizId={quiz.id} />
                     <Button asChild size="sm" variant="outline">
                       <Link to="/quiz/$quizId" params={{ quizId: quiz.id }}>
                         <PenLine className="size-4" />

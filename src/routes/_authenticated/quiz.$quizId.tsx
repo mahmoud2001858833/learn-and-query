@@ -6,6 +6,7 @@ import { FileDown, Loader2, PlayCircle, RefreshCw, Save, Trash2 } from "lucide-r
 import { toast } from "sonner";
 import { AppHeader } from "@/components/AppHeader";
 import { CopyQuizLinkButton } from "@/components/CopyQuizLinkButton";
+import { SendQuizDialog } from "@/components/SendQuizDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -191,6 +192,7 @@ function QuizEditor() {
           </div>
           <div className="flex flex-wrap gap-2">
             <CopyQuizLinkButton quizId={quizId} variant="secondary" size="default" />
+            <SendQuizDialog quizId={quizId} size="default" variant="outline" />
             <Button asChild>
               <Link to="/solve/$quizId" params={{ quizId }}>
                 <PlayCircle className="size-4" />
