@@ -50,24 +50,24 @@ export async function readPublicQuiz(quizId: string): Promise<PublicQuiz> {
   }
 
   const payload = data as Record<string, Json | undefined>;
-  const rawQuestions = Array.isArray(payload.questions) ? payload.questions : [];
+  const rawQuestions = Array.isArray(payload["questions"]) ? payload["questions"] : [];
   const questions: PublicQuestion[] = rawQuestions.flatMap((item) => {
     if (!item || typeof item !== "object" || Array.isArray(item)) return [];
     const row = item as Record<string, Json | undefined>;
-    const id = typeof row.id === "string" ? row.id : "";
-    const prompt = typeof row.prompt === "string" ? row.prompt : "";
+    const id = typeof row["id"] === "string" ? row["id"] : "";
+    const prompt = typeof row["prompt"] === "string" ? row["prompt"] : "";
     if (!id || !prompt) return [];
     return [{
       id,
-      type: typeof row.type === "string" ? row.type : "short",
+      type: typeof row["type"] === "string" ? row["type"] : "short",
       prompt,
-      options: Array.isArray(row.options) ? row.options.map(String) : [],
-      points: typeof row.points === "number" ? row.points : 1,
+      options: Array.isArray(row["options"]) ? row["options"].map(String) : [],
+      points: typeof row["points"] === "number" ? row["points"] : 1,
     }];
   });
 
   return {
-    title: typeof payload.title === "string" ? payload.title : "اختبار",
+    title: typeof payload["title"] === "string" ? payload["title"] : "اختبار",
     questions,
     maxScore: questions.reduce((sum, question) => sum + question.points, 0),
   };
