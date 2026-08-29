@@ -77,22 +77,62 @@ export async function chatJson<T>(
   return parseJson<T>(raw);
 }
 
+// Models sometimes emit literal newlines/tabs inside JSON string values, which
+// JSON.parse rejects ("Bad control character in string literal"). Escape them.
+function escapeControlCharsInStrings(input: string): string {
+  let out = "";
+  let inString = false;
+  let escaped = false;
+  for (const char of input) {
+    if (escaped) {
+      out += char;
+      escaped = false;
+      continue;
+    }
+    if (char === "\\" && inString) {
+      out += char;
+      escaped = true;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+      out += char;
+      continue;
+    }
+    if (inString && char <= "\u001f") {
+      if (char === "\n") out += "\\n";
+      else if (char === "\r") out += "\\r";
+      else if (char === "\t") out += "\\t";
+      else out += `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`;
+      continue;
+    }
+    out += char;
+  }
+  return out;
+}
+
 export function parseJson<T>(raw: string): T {
   const cleaned = raw
     .trim()
     .replace(/^```(?:json)?/i, "")
     .replace(/```$/, "")
     .trim();
-  try {
-    return JSON.parse(cleaned) as T;
-  } catch {
-    const start = cleaned.indexOf("{");
-    const end = cleaned.lastIndexOf("}");
-    if (start !== -1 && end > start) {
-      return JSON.parse(cleaned.slice(start, end + 1)) as T;
+
+  const candidates = [cleaned];
+  const start = cleaned.indexOf("{");
+  const end = cleaned.lastIndexOf("}");
+  if (start !== -1 && end > start) candidates.push(cleaned.slice(start, end + 1));
+
+  for (const candidate of candidates) {
+    for (const text of [candidate, escapeControlCharsInStrings(candidate)]) {
+      try {
+        return JSON.parse(text) as T;
+      } catch {
+        // try next variant
+      }
     }
-    throw new AiError("جاء رد غير صالح من الذكاء الاصطناعي. حاول مرة أخرى.", 500);
   }
+  throw new AiError("جاء رد غير صالح من الذكاء الاصطناعي. حاول مرة أخرى.", 500);
 }
 
 export const QUESTION_TYPES = ["mcq", "true_false", "short", "essay", "fill_blank"] as const;
