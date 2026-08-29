@@ -30,7 +30,7 @@ async function callGateway(body: Record<string, unknown>): Promise<string> {
     apiKey = openAiKey;
     url = OPENAI_URL;
     // The Lovable gateway accepts "vendor/model" ids; direct OpenAI needs a plain model id.
-    if (typeof body.model === "string") body.model = OPENAI_FALLBACK_MODEL;
+    if (typeof body["model"] === "string") body["model"] = OPENAI_FALLBACK_MODEL;
   }
   if (!apiKey) throw new AiError("مفتاح الذكاء الاصطناعي غير مهيأ", 500);
 
