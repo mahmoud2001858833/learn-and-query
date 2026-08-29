@@ -34,7 +34,7 @@ async function callGateway(body: Record<string, unknown>): Promise<string> {
   }
   if (!apiKey) throw new AiError("مفتاح الذكاء الاصطناعي غير مهيأ", 500);
 
-  const res = await fetch(GATEWAY_URL, {
+  const res = await fetch(url, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
