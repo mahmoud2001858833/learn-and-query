@@ -207,18 +207,37 @@ export async function exportQuizPdf(
     const pageH = pdf.internal.pageSize.getHeight();
     const sliceHeight = Math.floor((canvas.width * pageH) / pageW);
 
+    // Safe cut points: start offsets of each question block (and the footer),
+    // converted to canvas pixels, so a slice never splits a question in half.
+    const scale = canvas.height / element.offsetHeight;
+    const boundaries = Array.from(
+      element.querySelectorAll<HTMLElement>(".q, .foot"),
+    )
+      .map((el) => Math.round((el.offsetTop + 6) * scale))
+      .filter((y) => y > 0 && y < canvas.height)
+      .sort((a, b) => a - b);
+
+    const cuts: number[] = [0];
     let offset = 0;
-    let firstPage = true;
-    while (offset < canvas.height) {
-      const height = Math.min(sliceHeight, canvas.height - offset);
+    while (offset + sliceHeight < canvas.height) {
+      const limit = offset + sliceHeight;
+      const safe = boundaries.filter((y) => y > offset + sliceHeight * 0.35 && y <= limit).pop();
+      const next = safe ?? limit;
+      cuts.push(next);
+      offset = next;
+    }
+    cuts.push(canvas.height);
+
+    for (let i = 0; i < cuts.length - 1; i++) {
+      const height = cuts[i + 1]! - cuts[i]!;
       const page = document.createElement("canvas");
       page.width = canvas.width;
       page.height = height;
       const ctx = page.getContext("2d")!;
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, page.width, page.height);
-      ctx.drawImage(canvas, 0, -offset);
-      if (!firstPage) pdf.addPage();
+      ctx.drawImage(canvas, 0, -cuts[i]!);
+      if (i > 0) pdf.addPage();
       pdf.addImage(
         page.toDataURL("image/jpeg", 0.94),
         "JPEG",
@@ -227,8 +246,6 @@ export async function exportQuizPdf(
         pageW,
         (height * pageW) / canvas.width,
       );
-      firstPage = false;
-      offset += sliceHeight;
     }
 
     pdf.save(`${title}${withAnswers ? "-الإجابات" : "-الأسئلة"}.pdf`);
