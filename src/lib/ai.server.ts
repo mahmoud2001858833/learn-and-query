@@ -111,6 +111,62 @@ function escapeControlCharsInStrings(input: string): string {
   return out;
 }
 
+// Models sometimes stop mid-response (token limit), leaving JSON truncated.
+// Close any open string/brackets so the complete part can still be used.
+function repairTruncatedJson(input: string): string {
+  let out = "";
+  let inString = false;
+  let escaped = false;
+  const stack: string[] = [];
+  let lastSafe = -1; // index in `out` right after a completed array element
+
+  for (const char of input) {
+    out += char;
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (inString) {
+      if (char === "\\") escaped = true;
+      else if (char === '"') inString = false;
+      continue;
+    }
+    if (char === '"') inString = true;
+    else if (char === "{" || char === "[") stack.push(char);
+    else if (char === "}" || char === "]") {
+      stack.pop();
+      if (stack[stack.length - 1] === "[") lastSafe = out.length;
+    }
+  }
+
+  if (stack.length === 0) return out;
+  // Drop a partial trailing element when we're inside an array.
+  if (lastSafe > 0 && stack.includes("[")) {
+    const trimmed = out.slice(0, lastSafe);
+    let depth: string[] = [];
+    let s = false;
+    let e = false;
+    for (const c of trimmed) {
+      if (e) { e = false; continue; }
+      if (s) { if (c === "\\") e = true; else if (c === '"') s = false; continue; }
+      if (c === '"') s = true;
+      else if (c === "{" || c === "[") depth.push(c);
+      else if (c === "}" || c === "]") depth.pop();
+    }
+    out = trimmed;
+    stack.length = 0;
+    stack.push(...depth);
+  } else if (inString) {
+    out += '"';
+  }
+
+  while (stack.length) {
+    const open = stack.pop();
+    out += open === "[" ? "]" : "}";
+  }
+  return out;
+}
+
 export function parseJson<T>(raw: string): T {
   const cleaned = raw
     .trim()
@@ -122,9 +178,14 @@ export function parseJson<T>(raw: string): T {
   const start = cleaned.indexOf("{");
   const end = cleaned.lastIndexOf("}");
   if (start !== -1 && end > start) candidates.push(cleaned.slice(start, end + 1));
+  if (start !== -1) candidates.push(cleaned.slice(start));
 
   for (const candidate of candidates) {
-    for (const text of [candidate, escapeControlCharsInStrings(candidate)]) {
+    for (const text of [
+      candidate,
+      escapeControlCharsInStrings(candidate),
+      repairTruncatedJson(escapeControlCharsInStrings(candidate)),
+    ]) {
       try {
         return JSON.parse(text) as T;
       } catch {
@@ -132,8 +193,10 @@ export function parseJson<T>(raw: string): T {
       }
     }
   }
+  console.error("[ai-parse] unparsable response tail:", cleaned.slice(-400));
   throw new AiError("جاء رد غير صالح من الذكاء الاصطناعي. حاول مرة أخرى.", 500);
 }
+
 
 export const QUESTION_TYPES = ["mcq", "true_false", "short", "essay", "fill_blank"] as const;
 export type QuestionType = (typeof QUESTION_TYPES)[number];
