@@ -1,6 +1,7 @@
 // Prompt builders and AI helpers (server-only).
 export { chatJson, chatText, AiError, TYPE_LABELS_AR } from "./ai.server";
 import { type ChatMessage, TYPE_LABELS_AR } from "./ai.server";
+import type { QuestionAssetData } from "./question-asset";
 
 export type GeneratedQuestion = {
   type: string;
@@ -9,7 +10,7 @@ export type GeneratedQuestion = {
   correct_answer?: string;
   explanation?: string;
   points?: number;
-  asset?: unknown;
+  asset?: QuestionAssetData | null;
 };
 
 export type GradeResultItem = { id: string; score: number; feedback: string };
