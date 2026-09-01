@@ -331,6 +331,7 @@ export type Database = {
       }
       ak_questions: {
         Row: {
+          asset: Json | null
           correct_answer: string | null
           created_at: string
           explanation: string | null
@@ -345,6 +346,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          asset?: Json | null
           correct_answer?: string | null
           created_at?: string
           explanation?: string | null
@@ -359,6 +361,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          asset?: Json | null
           correct_answer?: string | null
           created_at?: string
           explanation?: string | null
