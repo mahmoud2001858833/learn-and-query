@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { normalizeAsset } from "./question-asset";
 import {
   buildGeneratePrompt,
   buildGradePrompt,
@@ -10,6 +11,13 @@ import {
   type GeneratedQuestion,
   type GradeResultItem,
 } from "./ai.helpers.server";
+
+/** Keeps only valid, sanitized assets so a question never carries broken markup. */
+function withCleanAsset(question: GeneratedQuestion): GeneratedQuestion {
+  const asset = normalizeAsset(question.asset);
+  return { ...question, asset };
+}
+
 
 export const ocrImages = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
