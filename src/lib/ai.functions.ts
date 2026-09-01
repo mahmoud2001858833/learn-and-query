@@ -67,7 +67,7 @@ export const generateQuestions = createServerFn({ method: "POST" })
     const result = await chatJson<{ questions: GeneratedQuestion[] }>(
       buildGeneratePrompt({ ...data, text: clampText(data.text) }),
     );
-    return { questions: result.questions ?? [] };
+    return { questions: (result.questions ?? []).map(withCleanAsset) };
   });
 
 export const regenerateQuestion = createServerFn({ method: "POST" })
@@ -79,7 +79,8 @@ export const regenerateQuestion = createServerFn({ method: "POST" })
     const result = await chatJson<{ questions: GeneratedQuestion[] }>(
       buildSinglePrompt({ ...data, text: clampText(data.text, 30000) }),
     );
-    return { question: result.questions?.[0] ?? null };
+    const first = result.questions?.[0];
+    return { question: first ? withCleanAsset(first) : null };
   });
 
 export const gradeOpenAnswers = createServerFn({ method: "POST" })
