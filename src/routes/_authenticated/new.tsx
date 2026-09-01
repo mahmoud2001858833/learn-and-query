@@ -205,6 +205,7 @@ function NewQuiz() {
         correct_answer?: string;
         explanation?: string;
         points?: number;
+        asset?: unknown;
       }> = [];
 
       for (let i = 0; i < batches.length; i++) {
@@ -255,6 +256,7 @@ function NewQuiz() {
           correct_answer: q.correct_answer ?? null,
           explanation: q.explanation ?? null,
           points: q.points ?? 1,
+          asset: (q.asset ?? null) as never,
         })),
       );
       if (qError) throw qError;

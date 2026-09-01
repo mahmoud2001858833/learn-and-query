@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { getPublicQuiz, submitPublicAttempt } from "@/lib/public-quiz.functions";
 import { TYPE_LABELS } from "@/lib/export";
+import { QuestionAsset } from "@/components/QuestionAsset";
 
 export const Route = createFileRoute("/solve/$quizId")({
   ssr: false,
@@ -228,6 +229,8 @@ function SolvePage() {
                     </div>
 
                     <p className="font-medium leading-relaxed text-foreground">{q.prompt}</p>
+
+                    <QuestionAsset asset={q.asset} />
 
                     {q.options.length > 0 ? (
                       <RadioGroup

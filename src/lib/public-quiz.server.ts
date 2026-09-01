@@ -8,6 +8,7 @@ export type PublicQuestion = {
   prompt: string;
   options: string[];
   points: number;
+  asset: unknown;
 };
 
 export type PublicQuiz = {
@@ -68,6 +69,7 @@ export async function readPublicQuiz(quizId: string): Promise<PublicQuiz> {
       prompt,
       options: Array.isArray(row["options"]) ? row["options"].map(String) : [],
       points: typeof row["points"] === "number" ? row["points"] : 1,
+      asset: row["asset"] ?? null,
     }];
   });
 
