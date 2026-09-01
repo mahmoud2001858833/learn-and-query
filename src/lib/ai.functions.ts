@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { normalizeAsset } from "./question-asset";
 import {
   buildGeneratePrompt,
   buildGradePrompt,
@@ -10,6 +11,13 @@ import {
   type GeneratedQuestion,
   type GradeResultItem,
 } from "./ai.helpers.server";
+
+/** Keeps only valid, sanitized assets so a question never carries broken markup. */
+function withCleanAsset(question: GeneratedQuestion): GeneratedQuestion {
+  const asset = normalizeAsset(question.asset);
+  return { ...question, asset };
+}
+
 
 export const ocrImages = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -59,7 +67,7 @@ export const generateQuestions = createServerFn({ method: "POST" })
     const result = await chatJson<{ questions: GeneratedQuestion[] }>(
       buildGeneratePrompt({ ...data, text: clampText(data.text) }),
     );
-    return { questions: result.questions ?? [] };
+    return { questions: (result.questions ?? []).map(withCleanAsset) };
   });
 
 export const regenerateQuestion = createServerFn({ method: "POST" })
@@ -71,7 +79,8 @@ export const regenerateQuestion = createServerFn({ method: "POST" })
     const result = await chatJson<{ questions: GeneratedQuestion[] }>(
       buildSinglePrompt({ ...data, text: clampText(data.text, 30000) }),
     );
-    return { question: result.questions?.[0] ?? null };
+    const first = result.questions?.[0];
+    return { question: first ? withCleanAsset(first) : null };
   });
 
 export const gradeOpenAnswers = createServerFn({ method: "POST" })

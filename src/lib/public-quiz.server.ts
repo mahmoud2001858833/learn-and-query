@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { SUPABASE_PUBLIC_KEY, SUPABASE_PUBLIC_URL } from "@/integrations/supabase/config";
+import { normalizeAsset, type QuestionAssetData } from "@/lib/question-asset";
 
 export type PublicQuestion = {
   id: string;
@@ -8,6 +9,7 @@ export type PublicQuestion = {
   prompt: string;
   options: string[];
   points: number;
+  asset: QuestionAssetData | null;
 };
 
 export type PublicQuiz = {
@@ -68,6 +70,7 @@ export async function readPublicQuiz(quizId: string): Promise<PublicQuiz> {
       prompt,
       options: Array.isArray(row["options"]) ? row["options"].map(String) : [],
       points: typeof row["points"] === "number" ? row["points"] : 1,
+      asset: normalizeAsset(row["asset"]),
     }];
   });
 

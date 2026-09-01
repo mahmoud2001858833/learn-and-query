@@ -1,6 +1,17 @@
 // Export a quiz to .docx (questions sheet + answer key) and to a downloadable PDF.
-import { Document, Packer, Paragraph, TextRun, AlignmentType } from "docx";
+import {
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  AlignmentType,
+  Table,
+  TableRow,
+  TableCell,
+  WidthType,
+} from "docx";
 import { saveAs } from "file-saver";
+import { normalizeAsset, type QuestionAssetData } from "./question-asset";
 
 export type ExportQuestion = {
   position: number;
@@ -9,6 +20,7 @@ export type ExportQuestion = {
   options: string[] | null;
   correct_answer: string | null;
   explanation: string | null;
+  asset?: unknown;
 };
 
 export const TYPE_LABELS: Record<string, string> = {
@@ -37,15 +49,50 @@ function line(text: string, bold = false) {
   });
 }
 
+function docxAsset(asset: QuestionAssetData): (Paragraph | Table)[] {
+  if (asset.kind === "table") {
+    const rows = asset.headers.some((h) => h.trim())
+      ? [asset.headers, ...asset.rows]
+      : asset.rows;
+    const table = new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      visuallyRightToLeft: true,
+      rows: rows.map(
+        (row, ri) =>
+          new TableRow({
+            children: row.map(
+              (value) =>
+                new TableCell({
+                  children: [
+                    new Paragraph({
+                      ...rtl,
+                      alignment: AlignmentType.CENTER,
+                      children: [
+                        new TextRun({ text: value, bold: ri === 0, size: 22, rightToLeft: true }),
+                      ],
+                    }),
+                  ],
+                }),
+            ),
+          }),
+      ),
+    });
+    return asset.caption ? [line(`   ${asset.caption}`), table, line("")] : [table, line("")];
+  }
+  return [line(`   [شكل توضيحي: ${asset.caption ?? "انظر نسخة PDF"}]`)];
+}
+
 export async function exportQuizDocx(
   title: string,
   questions: ExportQuestion[],
   withAnswers: boolean,
 ) {
-  const body: Paragraph[] = [heading(withAnswers ? `${title} — ورقة الإجابات` : title)];
+  const body: (Paragraph | Table)[] = [heading(withAnswers ? `${title} — ورقة الإجابات` : title)];
 
   questions.forEach((q, i) => {
     body.push(line(`${i + 1}. ${q.prompt}  (${TYPE_LABELS[q.type] ?? q.type})`, true));
+    const asset = normalizeAsset(q.asset);
+    if (asset) body.push(...docxAsset(asset));
     (q.options ?? []).forEach((opt, oi) => {
       body.push(line(`   ${String.fromCharCode(1571 + oi)}) ${opt}`));
     });
@@ -118,6 +165,7 @@ function buildSheetHtml(title: string, questions: ExportQuestion[], withAnswers:
             )}</span></div>`,
         )
         .join("");
+      const asset = assetHtml(normalizeAsset(q.asset));
       const blank =
         !withAnswers && (q.type === "short" || q.type === "essay")
           ? `<div class="lines"><div></div><div></div><div></div></div>`
@@ -133,6 +181,7 @@ function buildSheetHtml(title: string, questions: ExportQuestion[], withAnswers:
   <div class="qhead"><span class="num">${i + 1}</span><div class="prompt">${escapeHtml(
     q.prompt,
   )}</div><span class="tag">${TYPE_LABELS[q.type] ?? q.type}</span></div>
+  ${asset}
   ${options ? `<div class="opts">${options}</div>` : ""}
   ${blank}${answer}${why}
 </section>`;
@@ -156,6 +205,24 @@ function buildSheetHtml(title: string, questions: ExportQuestion[], withAnswers:
 </div>`;
 }
 
+function assetHtml(asset: QuestionAssetData | null): string {
+  if (!asset) return "";
+  const caption = asset.caption
+    ? `<div class="cap">${escapeHtml(asset.caption)}</div>`
+    : "";
+  if (asset.kind === "table") {
+    const head = asset.headers.some((h) => h.trim())
+      ? `<thead><tr>${asset.headers.map((h) => `<th>${escapeHtml(h)}</th>`).join("")}</tr></thead>`
+      : "";
+    const body = asset.rows
+      .map((row) => `<tr>${row.map((c) => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`)
+      .join("");
+    return `<div class="asset"><table class="tbl">${head}<tbody>${body}</tbody></table>${caption}</div>`;
+  }
+  // SVG is sanitized by normalizeAsset before it reaches the sheet.
+  return `<div class="asset"><div class="fig">${asset.svg}</div>${caption}</div>`;
+}
+
 const SHEET_CSS = `
 .sheet{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;direction:rtl;background:#fff;color:#1a2340;width:794px;box-sizing:border-box;padding:46px 52px;line-height:1.9}
 .sheet .hero{margin-bottom:30px}
@@ -172,6 +239,13 @@ const SHEET_CSS = `
 .sheet .opts{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;margin:10px 36px 0 0}
 .sheet .opt{display:flex;gap:8px;font-size:14px;color:#2b3450}
 .sheet .mark{flex:0 0 20px;height:20px;border:1px solid #c3cbe0;border-radius:6px;font-size:11px;display:flex;align-items:center;justify-content:center;color:#5a6480}
+.sheet .asset{margin:12px 36px 0 0}
+.sheet .tbl{border-collapse:collapse;width:100%;font-size:13.5px;background:#fbfcfe}
+.sheet .tbl th,.sheet .tbl td{border:1px solid #b9c2d8;padding:6px 8px;text-align:center}
+.sheet .tbl th{background:#eef2fb;font-weight:700;color:#152040}
+.sheet .fig{text-align:center}
+.sheet .fig svg{max-width:420px;width:100%;height:auto}
+.sheet .cap{font-size:11.5px;color:#6b7492;text-align:center;margin-top:5px}
 .sheet .lines{margin:10px 36px 0 0}
 .sheet .lines div{border-bottom:1px dashed #ccd3e5;height:22px}
 .sheet .ans{margin:10px 36px 0 0;font-size:14px;color:#0b6b52;background:#eefaf5;border-inline-start:3px solid #0f9b78;border-radius:8px;padding:6px 10px}

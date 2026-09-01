@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { regenerateQuestion } from "@/lib/ai.functions";
 import { exportQuizDocx, exportQuizPdf, TYPE_LABELS } from "@/lib/export";
+import { QuestionAsset } from "@/components/QuestionAsset";
 
 export const Route = createFileRoute("/_authenticated/quiz/$quizId")({
   head: () => ({
@@ -40,6 +41,7 @@ type QuestionRow = {
   explanation: string | null;
   order_index: number;
   points: number;
+  asset: unknown;
 };
 
 function toOptions(value: unknown): string[] {
@@ -71,7 +73,7 @@ function QuizEditor() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("ak_questions")
-        .select("id, type, prompt, options, correct_answer, explanation, order_index, points")
+        .select("id, type, prompt, options, correct_answer, explanation, order_index, points, asset")
         .eq("quiz_id", quizId)
         .order("order_index");
       if (error) throw error;
@@ -139,6 +141,7 @@ function QuizEditor() {
           options: (question.options ?? []) as never,
           correct_answer: question.correct_answer ?? null,
           explanation: question.explanation ?? null,
+          asset: (question.asset ?? null) as never,
         })
         .eq("id", q.id);
       if (updateError) throw updateError;
@@ -158,6 +161,7 @@ function QuizEditor() {
     options: toOptions(q.options),
     correct_answer: q.correct_answer,
     explanation: q.explanation,
+    asset: q.asset,
   }));
 
   const [exporting, setExporting] = useState<string | null>(null);
@@ -297,6 +301,8 @@ function QuestionCard({
           </Button>
         </div>
       </div>
+
+      <QuestionAsset asset={question.asset} />
 
       <div className="space-y-2">
         <Label>نص السؤال</Label>

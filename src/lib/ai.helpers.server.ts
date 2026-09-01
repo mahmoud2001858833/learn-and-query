@@ -1,6 +1,7 @@
 // Prompt builders and AI helpers (server-only).
 export { chatJson, chatText, AiError, TYPE_LABELS_AR } from "./ai.server";
 import { type ChatMessage, TYPE_LABELS_AR } from "./ai.server";
+import type { QuestionAssetData } from "./question-asset";
 
 export type GeneratedQuestion = {
   type: string;
@@ -9,6 +10,7 @@ export type GeneratedQuestion = {
   correct_answer?: string;
   explanation?: string;
   points?: number;
+  asset?: QuestionAssetData | null;
 };
 
 export type GradeResultItem = { id: string; score: number; feedback: string };
@@ -18,13 +20,22 @@ export function clampText(text: string, max = 60000) {
 }
 
 const SCHEMA_NOTE = `أعد كائن JSON فقط بالشكل:
-{"questions":[{"type":"mcq|true_false|short|essay|fill_blank","prompt":"نص السؤال","options":["..."],"correct_answer":"الإجابة الصحيحة","explanation":"شرح موجز","points":1}]}
+{"questions":[{"type":"mcq|true_false|short|essay|fill_blank","prompt":"نص السؤال","options":["..."],"correct_answer":"الإجابة الصحيحة","explanation":"شرح موجز","points":1,"asset":null}]}
 قواعد:
 - mcq: 4 خيارات في options، و correct_answer مطابق حرفيًا لأحد الخيارات.
 - true_false: options = ["صح","خطأ"] و correct_answer أحدهما.
 - fill_blank: استخدم ــــ مكان الفراغ، و correct_answer هو الكلمة الناقصة.
 - short و essay: options فارغة، correct_answer إجابة نموذجية.
-- كل سؤال يجب أن يكون مبنيًا على محتوى النص المرفق فقط، ولا تكرار.`;
+- كل سؤال يجب أن يكون مبنيًا على محتوى النص المرفق فقط، ولا تكرار.
+
+المرفقات (جدول أو شكل) — قاعدة إلزامية:
+- إذا كان نص السؤال يشير إلى جدول أو بيانات أو قيم أو شكل أو رسم أو مخطط ("حسب الجدول التالي"، "من البيانات المجاورة"، "في الشكل التالي")، فيجب أن يحتوي الحقل asset على المرفق كاملًا. ممنوع منعًا تامًا إنشاء سؤال يشير إلى جدول أو شكل غير موجود.
+- إن لم يكن هناك مرفق فاجعل asset = null، ولا تُشِر في نص السؤال إلى أي جدول أو شكل.
+- جدول: {"kind":"table","caption":"عنوان الجدول","headers":["العمود ١","العمود ٢"],"rows":[["قيمة","قيمة"]]} — كل الخلايا نصوص، والقيم كافية لحل السؤال.
+- شكل/صورة توضيحية: {"kind":"figure","caption":"وصف الشكل","svg":"<svg viewBox=\\"0 0 400 260\\" xmlns=\\"http://www.w3.org/2000/svg\\">…</svg>"}
+- ارسم الشكل بـ SVG خالص فقط (rect, line, circle, path, polyline, polygon, text) بألوان واضحة على خلفية بيضاء، بدون script أو صور خارجية أو روابط، وبحد أقصى 4000 حرف، واكتب النصوص العربية داخل عناصر text بحجم مقروء (14px أو أكثر).
+- استخدم الشكل للرسوم البيانية، الدوائر الكهربائية، الأدوات المخبرية، التراكيب الكيميائية، والمخططات — وليس لتزيين السؤال.`;
+
 
 export function buildGeneratePrompt(input: {
   text: string;
