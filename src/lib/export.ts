@@ -236,33 +236,36 @@ function assetHtml(asset: QuestionAssetData | null): string {
 }
 
 const SHEET_CSS = `
-.sheet{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;direction:rtl;background:#fff;color:#1a2340;width:794px;box-sizing:border-box;padding:46px 52px;line-height:1.9}
-.sheet .hero{margin-bottom:30px}
-.sheet .bar{height:6px;border-radius:99px;background:linear-gradient(90deg,#1e3a8a,#0f9b78);margin-bottom:18px}
-.sheet h1{font-size:26px;font-weight:700;margin:0 0 10px;color:#152040}
-.sheet .meta{display:flex;gap:16px;font-size:13px;color:#0f9b78;font-weight:600}
-.sheet .sub{font-size:12px;color:#6b7492;margin-top:6px}
-.sheet .fields{display:flex;gap:20px;font-size:13px;color:#39415e;margin-top:16px;padding:12px 14px;border:1px solid #e3e7f2;border-radius:10px;background:#f8fafc}
-.sheet .q{padding:16px 0;border-top:1px solid #e6eaf4;break-inside:avoid}
+.sheet{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;direction:rtl;background:#fff;color:#1b2542;width:794px;box-sizing:border-box;padding:48px 54px;line-height:1.95}
+.sheet .hero{margin-bottom:26px;padding:22px 24px;border:1px solid #e6eaf4;border-radius:16px;background:#f9fbff}
+.sheet .bar{height:5px;width:120px;border-radius:99px;background:linear-gradient(90deg,#1e3a8a,#0f9b78);margin-bottom:16px}
+.sheet h1{font-size:27px;font-weight:700;margin:0 0 10px;color:#111c3a;letter-spacing:-0.2px}
+.sheet .meta{display:flex;align-items:center;gap:10px;font-size:12.5px;color:#0f9b78;font-weight:600}
+.sheet .dot{width:4px;height:4px;border-radius:99px;background:#c3cbe0}
+.sheet .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.sheet .chip{font-size:11px;color:#39415e;background:#fff;border:1px solid #e0e6f3;border-radius:99px;padding:3px 10px}
+.sheet .fields{display:flex;gap:18px;font-size:12.5px;color:#39415e;margin-top:16px;padding:11px 14px;border:1px dashed #ccd5ea;border-radius:12px;background:#fff}
+.sheet .q{padding:18px 0;border-top:1px solid #edf0f8;break-inside:avoid}
 .sheet .qhead{display:flex;align-items:flex-start;gap:10px}
-.sheet .num{flex:0 0 26px;height:26px;border-radius:8px;background:#1e3a8a;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
-.sheet .prompt{flex:1;font-size:16px;font-weight:600}
-.sheet .tag{flex:0 0 auto;font-size:11px;color:#0f9b78;background:#e8f7f1;border-radius:99px;padding:2px 10px;height:20px}
-.sheet .opts{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;margin:10px 36px 0 0}
-.sheet .opt{display:flex;gap:8px;font-size:14px;color:#2b3450}
-.sheet .mark{flex:0 0 20px;height:20px;border:1px solid #c3cbe0;border-radius:6px;font-size:11px;display:flex;align-items:center;justify-content:center;color:#5a6480}
-.sheet .asset{margin:12px 36px 0 0}
-.sheet .tbl{border-collapse:collapse;width:100%;font-size:13.5px;background:#fbfcfe}
-.sheet .tbl th,.sheet .tbl td{border:1px solid #b9c2d8;padding:6px 8px;text-align:center}
+.sheet .num{flex:0 0 27px;height:27px;border-radius:9px;background:#1e3a8a;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.sheet .prompt{flex:1;font-size:16px;font-weight:600;color:#141d38}
+.sheet .tag{flex:0 0 auto;font-size:10.5px;color:#0b7a5e;background:#e8f7f1;border-radius:99px;padding:2px 10px;height:20px}
+.sheet .opts{display:grid;grid-template-columns:1fr 1fr;gap:7px 18px;margin:11px 37px 0 0}
+.sheet .opt{display:flex;gap:8px;font-size:14px;color:#2b3450;padding:4px 8px;border:1px solid #eef1f8;border-radius:9px;background:#fcfdff}
+.sheet .mark{flex:0 0 20px;height:20px;border:1px solid #c3cbe0;border-radius:6px;font-size:11px;display:flex;align-items:center;justify-content:center;color:#5a6480;background:#fff}
+.sheet .asset{margin:12px 37px 0 0;padding:12px;border:1px solid #e6eaf4;border-radius:12px;background:#fbfcfe}
+.sheet .tbl{border-collapse:collapse;width:100%;font-size:13.5px;background:#fff;overflow:hidden}
+.sheet .tbl th,.sheet .tbl td{border:1px solid #ccd4e6;padding:7px 9px;text-align:center}
 .sheet .tbl th{background:#eef2fb;font-weight:700;color:#152040}
-.sheet .fig{text-align:center}
-.sheet .fig svg{max-width:420px;width:100%;height:auto}
-.sheet .cap{font-size:11.5px;color:#6b7492;text-align:center;margin-top:5px}
-.sheet .lines{margin:10px 36px 0 0}
-.sheet .lines div{border-bottom:1px dashed #ccd3e5;height:22px}
-.sheet .ans{margin:10px 36px 0 0;font-size:14px;color:#0b6b52;background:#eefaf5;border-inline-start:3px solid #0f9b78;border-radius:8px;padding:6px 10px}
-.sheet .exp{margin:6px 36px 0 0;font-size:12.5px;color:#5a6480}
-.sheet .foot{margin-top:26px;border-top:1px solid #e6eaf4;padding-top:10px;font-size:11px;color:#959cb4;text-align:center}
+.sheet .tbl tbody tr:nth-child(even) td{background:#f8fafd}
+.sheet .fig{text-align:center;background:#fff;border-radius:8px;padding:6px}
+.sheet .fig svg{max-width:430px;width:100%;height:auto;display:block;margin:0 auto}
+.sheet .cap{font-size:11.5px;color:#6b7492;text-align:center;margin-top:7px}
+.sheet .lines{margin:11px 37px 0 0}
+.sheet .lines div{border-bottom:1px dashed #ccd3e5;height:23px}
+.sheet .ans{margin:11px 37px 0 0;font-size:14px;color:#0b6b52;background:#eefaf5;border-inline-start:3px solid #0f9b78;border-radius:9px;padding:7px 11px}
+.sheet .exp{margin:6px 37px 0 0;font-size:12.5px;color:#5a6480;background:#f8fafc;border-radius:9px;padding:6px 11px}
+.sheet .foot{margin-top:28px;border-top:1px solid #edf0f8;padding-top:11px;font-size:10.5px;color:#a2a9be;text-align:center}
 `;
 
 /** Renders an elegant RTL sheet and downloads it directly as a real PDF file. */
@@ -270,6 +273,7 @@ export async function exportQuizPdf(
   title: string,
   questions: ExportQuestion[],
   withAnswers: boolean,
+  branding = true,
 ) {
   if (!questions.length) throw new Error("لا توجد أسئلة للتصدير");
   const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
@@ -278,8 +282,9 @@ export async function exportQuizPdf(
   ]);
 
   const { element, cleanup } = await renderInIsolatedFrame(
-    buildSheetHtml(title, questions, withAnswers),
+    buildSheetHtml(title, questions, withAnswers, branding),
   );
+
 
   try {
     const canvas = await html2canvas(element, {
