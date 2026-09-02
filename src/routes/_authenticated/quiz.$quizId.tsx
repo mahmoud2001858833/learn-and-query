@@ -165,14 +165,16 @@ function QuizEditor() {
   }));
 
   const [exporting, setExporting] = useState<string | null>(null);
+  const [noWatermark, setNoWatermark] = useState(false);
 
   const doExport = async (kind: "docx" | "pdf", withAnswers: boolean) => {
     const title = quiz.data?.title ?? "اختبار";
     const key = `${kind}-${withAnswers}`;
     setExporting(key);
     try {
-      if (kind === "docx") await exportQuizDocx(title, exportRows, withAnswers);
-      else await exportQuizPdf(title, exportRows, withAnswers);
+      const branding = !noWatermark;
+      if (kind === "docx") await exportQuizDocx(title, exportRows, withAnswers, branding);
+      else await exportQuizPdf(title, exportRows, withAnswers, branding);
       toast.success("تم تنزيل الملف");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "تعذّر التصدير");
@@ -180,6 +182,7 @@ function QuizEditor() {
       setExporting(null);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-background">
