@@ -149,15 +149,20 @@ async function renderInIsolatedFrame(html: string): Promise<{
   return { element, cleanup: () => iframe.remove() };
 }
 
-function buildSheetHtml(title: string, questions: ExportQuestion[], withAnswers: boolean) {
+function buildSheetHtml(
+  title: string,
+  questions: ExportQuestion[],
+  withAnswers: boolean,
+  branding: boolean,
+) {
   const today = new Intl.DateTimeFormat("ar", { dateStyle: "long" }).format(new Date());
   const counts = questions.reduce<Record<string, number>>((acc, q) => {
     acc[q.type] = (acc[q.type] ?? 0) + 1;
     return acc;
   }, {});
   const summary = Object.entries(counts)
-    .map(([t, n]) => `${TYPE_LABELS[t] ?? t}: ${n}`)
-    .join("  ·  ");
+    .map(([t, n]) => `<span class="chip">${TYPE_LABELS[t] ?? t} · ${n}</span>`)
+    .join("");
 
   const blocks = questions
     .map((q, i) => {
@@ -196,8 +201,8 @@ function buildSheetHtml(title: string, questions: ExportQuestion[], withAnswers:
   <header class="hero">
     <div class="bar"></div>
     <h1>${escapeHtml(title)}${withAnswers ? " — نموذج الإجابات" : ""}</h1>
-    <div class="meta"><span>${questions.length} سؤالًا</span><span>${today}</span></div>
-    <div class="sub">${summary}</div>
+    <div class="meta"><span>${questions.length} سؤالًا</span><span class="dot"></span><span>${today}</span></div>
+    <div class="chips">${summary}</div>
     ${
       withAnswers
         ? ""
@@ -205,9 +210,12 @@ function buildSheetHtml(title: string, questions: ExportQuestion[], withAnswers:
     }
   </header>
   ${blocks}
-  <footer class="foot">أُنشئت بواسطة منصة اسأل كتابك</footer>
+  <footer class="foot">${
+    branding ? "أُنشئت بواسطة منصة اسأل كتابك" : "&nbsp;"
+  }</footer>
 </div>`;
 }
+
 
 function assetHtml(asset: QuestionAssetData | null): string {
   if (!asset) return "";
