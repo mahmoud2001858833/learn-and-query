@@ -38,11 +38,38 @@ export function sanitizeSvg(raw: string): string | null {
     .replace(/javascript:/gi, "");
 
   if (!/^<svg[\s>]/i.test(svg)) return null;
-  if (!/viewBox\s*=/i.test(svg)) {
-    svg = svg.replace(/^<svg/i, '<svg viewBox="0 0 400 260"');
+
+  // Extract the opening tag so we can normalize it (responsive + readable text).
+  const openEnd = svg.indexOf(">");
+  if (openEnd === -1) return null;
+  let open = svg.slice(0, openEnd + 1);
+  const rest = svg.slice(openEnd + 1);
+
+  // Fixed pixel sizes break responsive layout in the app, PDF and Word exports.
+  open = open.replace(/\s(width|height)\s*=\s*("[^"]*"|'[^']*')/gi, "");
+  if (!/viewBox\s*=/i.test(open)) {
+    open = open.replace(/^<svg/i, '<svg viewBox="0 0 480 320"');
   }
+  if (!/xmlns\s*=/i.test(open)) {
+    open = open.replace(/^<svg/i, '<svg xmlns="http://www.w3.org/2000/svg"');
+  }
+  // Arabic labels need a real font stack and RTL shaping to render correctly.
+  if (!/font-family\s*=/i.test(open)) {
+    open = open.replace(
+      /^<svg/i,
+      '<svg font-family="IBM Plex Sans Arabic, Segoe UI, Tahoma, sans-serif"',
+    );
+  }
+  svg = open + rest;
+
+  // Bump unreadably small label sizes produced by the model.
+  svg = svg.replace(/font-size\s*=\s*"(\d+(?:\.\d+)?)(px)?"/gi, (match, size: string) =>
+    Number(size) < 13 ? 'font-size="14"' : match,
+  );
+
   return svg;
 }
+
 
 const cell = (value: unknown) => String(value ?? "").slice(0, 300);
 
