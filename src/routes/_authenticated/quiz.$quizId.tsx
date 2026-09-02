@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { regenerateQuestion } from "@/lib/ai.functions";
 import { exportQuizDocx, exportQuizPdf, TYPE_LABELS } from "@/lib/export";
@@ -165,14 +166,16 @@ function QuizEditor() {
   }));
 
   const [exporting, setExporting] = useState<string | null>(null);
+  const [noWatermark, setNoWatermark] = useState(false);
 
   const doExport = async (kind: "docx" | "pdf", withAnswers: boolean) => {
     const title = quiz.data?.title ?? "اختبار";
     const key = `${kind}-${withAnswers}`;
     setExporting(key);
     try {
-      if (kind === "docx") await exportQuizDocx(title, exportRows, withAnswers);
-      else await exportQuizPdf(title, exportRows, withAnswers);
+      const branding = !noWatermark;
+      if (kind === "docx") await exportQuizDocx(title, exportRows, withAnswers, branding);
+      else await exportQuizPdf(title, exportRows, withAnswers, branding);
       toast.success("تم تنزيل الملف");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "تعذّر التصدير");
@@ -180,6 +183,7 @@ function QuizEditor() {
       setExporting(null);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -206,34 +210,48 @@ function QuizEditor() {
           </div>
         </div>
 
-        <section className="surface-card flex flex-wrap gap-2 p-4">
-          {(
-            [
-              { kind: "pdf", answers: false, label: "PDF أسئلة" },
-              { kind: "pdf", answers: true, label: "PDF إجابات" },
-              { kind: "docx", answers: false, label: "Word أسئلة" },
-              { kind: "docx", answers: true, label: "Word إجابات" },
-            ] as const
-          ).map((item) => {
-            const key = `${item.kind}-${item.answers}`;
-            return (
-              <Button
-                key={key}
-                variant="outline"
-                size="sm"
-                disabled={exporting !== null}
-                onClick={() => doExport(item.kind, item.answers)}
-              >
-                {exporting === key ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <FileDown className="size-4" />
-                )}{" "}
-                {item.label}
-              </Button>
-            );
-          })}
+        <section className="surface-card space-y-3 p-4">
+          <div className="flex flex-wrap gap-2">
+            {(
+              [
+                { kind: "pdf", answers: false, label: "PDF أسئلة" },
+                { kind: "pdf", answers: true, label: "PDF إجابات" },
+                { kind: "docx", answers: false, label: "Word أسئلة" },
+                { kind: "docx", answers: true, label: "Word إجابات" },
+              ] as const
+            ).map((item) => {
+              const key = `${item.kind}-${item.answers}`;
+              return (
+                <Button
+                  key={key}
+                  variant="outline"
+                  size="sm"
+                  disabled={exporting !== null}
+                  onClick={() => doExport(item.kind, item.answers)}
+                >
+                  {exporting === key ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <FileDown className="size-4" />
+                  )}{" "}
+                  {item.label}
+                </Button>
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-3 border-t border-border pt-3">
+            <Switch
+              id="no-watermark"
+              checked={noWatermark}
+              onCheckedChange={setNoWatermark}
+              disabled={exporting !== null}
+            />
+            <Label htmlFor="no-watermark" className="text-sm text-muted-foreground">
+              إزالة العلامة المائية (اسم المنصة) من الملفات المصدَّرة
+            </Label>
+          </div>
         </section>
+
 
         {questions.isLoading ? (
           <Skeleton className="h-64 w-full" />
