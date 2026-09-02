@@ -209,34 +209,48 @@ function QuizEditor() {
           </div>
         </div>
 
-        <section className="surface-card flex flex-wrap gap-2 p-4">
-          {(
-            [
-              { kind: "pdf", answers: false, label: "PDF أسئلة" },
-              { kind: "pdf", answers: true, label: "PDF إجابات" },
-              { kind: "docx", answers: false, label: "Word أسئلة" },
-              { kind: "docx", answers: true, label: "Word إجابات" },
-            ] as const
-          ).map((item) => {
-            const key = `${item.kind}-${item.answers}`;
-            return (
-              <Button
-                key={key}
-                variant="outline"
-                size="sm"
-                disabled={exporting !== null}
-                onClick={() => doExport(item.kind, item.answers)}
-              >
-                {exporting === key ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <FileDown className="size-4" />
-                )}{" "}
-                {item.label}
-              </Button>
-            );
-          })}
+        <section className="surface-card space-y-3 p-4">
+          <div className="flex flex-wrap gap-2">
+            {(
+              [
+                { kind: "pdf", answers: false, label: "PDF أسئلة" },
+                { kind: "pdf", answers: true, label: "PDF إجابات" },
+                { kind: "docx", answers: false, label: "Word أسئلة" },
+                { kind: "docx", answers: true, label: "Word إجابات" },
+              ] as const
+            ).map((item) => {
+              const key = `${item.kind}-${item.answers}`;
+              return (
+                <Button
+                  key={key}
+                  variant="outline"
+                  size="sm"
+                  disabled={exporting !== null}
+                  onClick={() => doExport(item.kind, item.answers)}
+                >
+                  {exporting === key ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <FileDown className="size-4" />
+                  )}{" "}
+                  {item.label}
+                </Button>
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-3 border-t border-border pt-3">
+            <Switch
+              id="no-watermark"
+              checked={noWatermark}
+              onCheckedChange={setNoWatermark}
+              disabled={exporting !== null}
+            />
+            <Label htmlFor="no-watermark" className="text-sm text-muted-foreground">
+              إزالة العلامة المائية (اسم المنصة) من الملفات المصدَّرة
+            </Label>
+          </div>
         </section>
+
 
         {questions.isLoading ? (
           <Skeleton className="h-64 w-full" />
