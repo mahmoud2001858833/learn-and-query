@@ -86,6 +86,7 @@ export async function exportQuizDocx(
   title: string,
   questions: ExportQuestion[],
   withAnswers: boolean,
+  branding = true,
 ) {
   const body: (Paragraph | Table)[] = [heading(withAnswers ? `${title} — ورقة الإجابات` : title)];
 
@@ -105,10 +106,13 @@ export async function exportQuizDocx(
     body.push(line(""));
   });
 
+  if (branding) body.push(line("أُنشئت بواسطة منصة اسأل كتابك"));
+
   const doc = new Document({ sections: [{ children: body }] });
   const blob = await Packer.toBlob(doc);
   saveAs(blob, `${title}${withAnswers ? "-الإجابات" : "-الأسئلة"}.docx`);
 }
+
 
 const ARABIC_LETTERS = ["أ", "ب", "ج", "د", "هـ", "و", "ز", "ح"];
 
