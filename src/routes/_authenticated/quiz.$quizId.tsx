@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { regenerateQuestion } from "@/lib/ai.functions";
 import { exportQuizDocx, exportQuizPdf, TYPE_LABELS } from "@/lib/export";
