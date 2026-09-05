@@ -2,8 +2,10 @@
 
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
+const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 // OpenAI fallback model when using a direct OpenAI key instead of the Lovable gateway.
 const OPENAI_FALLBACK_MODEL = "gpt-4o-mini";
+const GEMINI_FALLBACK_MODEL = "gemini-2.5-flash";
 
 export type ChatContent =
   | string
