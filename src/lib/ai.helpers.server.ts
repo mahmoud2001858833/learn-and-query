@@ -106,3 +106,79 @@ export function buildGradePrompt(
     },
   ];
 }
+
+// ---------- Figure style + figure-only prompts ----------
+
+import {
+  DEFAULT_FIGURE_STYLE,
+  FIGURE_HEIGHT,
+  FIGURE_PALETTES,
+  FIGURE_WIDTH,
+  type FigureStyle,
+} from "./question-asset";
+
+/** Turns the user's visual preferences into explicit drawing instructions. */
+export function figureStyleNote(style: FigureStyle = DEFAULT_FIGURE_STYLE): string {
+  const p = FIGURE_PALETTES[style.palette] ?? FIGURE_PALETTES.classic;
+  const base = Math.round(15 * style.fontScale);
+  return `تفضيلات الرسم الإلزامية:
+- الإطار: viewBox="0 0 ${FIGURE_WIDTH} ${FIGURE_HEIGHT}" وخلفية بيضاء كاملة.
+- الألوان: الخطوط والحدود ${p.stroke}، اللون المساعد ${p.accent}، لون التمييز ${p.alt}، تعبئة فاتحة ${p.fill}، النصوص ${p.text}. لا تستخدم ألوانًا أخرى.
+- الخطوط والنصوص: font-size بين ${Math.max(12, base - 1)} و ${Math.min(24, base + 3)}، بدون تدوير، بحد أقصى 14 حرفًا لكل تسمية، ومسافة لا تقل عن 12px بين أي تسميتين.
+- سماكة الخطوط: stroke-width لا يقل عن ${style.strokeWidth}.
+- الزوايا: ${style.rounded ? 'زوايا مستديرة للمستطيلات (rx="6")' : "زوايا حادة بدون rx"}.
+- الدقة: كل قيمة يحتاجها السؤال ظاهرة ومقروءة، ومحاور مرقّمة بوحدات واضحة، وتوازن بصري وهوامش 40px من كل جهة.`;
+}
+
+const SINGLE_ASSET_SCHEMA = `أعد كائن JSON فقط بالشكل:
+{"asset":{"kind":"figure","caption":"وصف قصير","svg":"<svg viewBox=\\"0 0 480 320\\" xmlns=\\"http://www.w3.org/2000/svg\\">…</svg>"}}
+أو للجدول: {"asset":{"kind":"table","caption":"عنوان","headers":["..."],"rows":[["..."]]}}
+استخدم فقط: rect, line, circle, ellipse, path, polyline, polygon, text, g. بدون script أو image أو style أو روابط.`;
+
+/** Draws (or redraws) a single figure/table for one question. */
+export function buildFigurePrompt(input: {
+  questionPrompt: string;
+  instruction?: string | undefined;
+  currentSvg?: string | undefined;
+  style?: FigureStyle | undefined;
+}): ChatMessage[] {
+  return [
+    {
+      role: "system",
+      content:
+        "أنت رسّام تعليمي دقيق ينتج أشكالًا SVG نظيفة ومهنية للأسئلة المدرسية. تُجيب بـ JSON صالح فقط.",
+    },
+    {
+      role: "user",
+      content: `السؤال:\n"""\n${input.questionPrompt}\n"""\n${
+        input.currentSvg ? `الشكل الحالي (حسّنه أو أعد رسمه):\n${input.currentSvg}\n` : ""
+      }${input.instruction ? `تعليمات المستخدم (أولوية عليا): ${input.instruction}\n` : ""}
+ارسم مرفقًا واحدًا يخدم هذا السؤال بدقة.
+${figureStyleNote(input.style ?? DEFAULT_FIGURE_STYLE)}
+${SINGLE_ASSET_SCHEMA}`,
+    },
+  ];
+}
+
+/** Asks the model to fix a figure that failed validation. */
+export function buildFigureRepairPrompt(input: {
+  questionPrompt: string;
+  svg: string;
+  problems: string[];
+  style?: FigureStyle | undefined;
+}): ChatMessage[] {
+  return [
+    {
+      role: "system",
+      content: "أنت مراجع رسومات SVG. تصلح الأخطاء دون تغيير معنى الشكل. تُجيب بـ JSON صالح فقط.",
+    },
+    {
+      role: "user",
+      content: `السؤال: ${input.questionPrompt}\n\nالشكل الحالي:\n${input.svg}\n\nالمشاكل المكتشفة:\n- ${input.problems.join(
+        "\n- ",
+      )}\n\nأصلح هذه المشاكل كلها وأعد الشكل كاملًا.\n${figureStyleNote(
+        input.style ?? DEFAULT_FIGURE_STYLE,
+      )}\n${SINGLE_ASSET_SCHEMA}`,
+    },
+  ];
+}
