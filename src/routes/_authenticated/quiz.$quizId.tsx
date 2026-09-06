@@ -18,6 +18,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { regenerateQuestion } from "@/lib/ai.functions";
 import { exportQuizDocx, exportQuizPdf, TYPE_LABELS } from "@/lib/export";
 import { QuestionAsset } from "@/components/QuestionAsset";
+import { AssetEditor } from "@/components/AssetEditor";
+import type { QuestionAssetData } from "@/lib/question-asset";
 
 export const Route = createFileRoute("/_authenticated/quiz/$quizId")({
   head: () => ({
@@ -97,6 +99,18 @@ function QuizEditor() {
     if (error) toast.error("تعذّر الحفظ");
     else {
       toast.success("تم الحفظ");
+      refresh();
+    }
+  };
+
+  const saveAsset = async (id: string, asset: QuestionAssetData | null) => {
+    const { error } = await supabase
+      .from("ak_questions")
+      .update({ asset: asset as never })
+      .eq("id", id);
+    if (error) toast.error("تعذّر حفظ المرفق");
+    else {
+      toast.success(asset ? "تم حفظ المرفق" : "تم حذف المرفق");
       refresh();
     }
   };
@@ -266,6 +280,7 @@ function QuizEditor() {
                 onSave={(patch) => saveQuestion(q, patch)}
                 onDelete={() => removeQuestion(q.id)}
                 onRegenerate={() => regenerate(q)}
+                onSaveAsset={(asset) => saveAsset(q.id, asset)}
               />
             ))}
           </div>
@@ -282,6 +297,7 @@ function QuestionCard({
   onSave,
   onDelete,
   onRegenerate,
+  onSaveAsset,
 }: {
   index: number;
   question: QuestionRow;
@@ -289,6 +305,7 @@ function QuestionCard({
   onSave: (patch: Partial<QuestionRow>) => void;
   onDelete: () => void;
   onRegenerate: () => void;
+  onSaveAsset: (asset: QuestionAssetData | null) => Promise<void> | void;
 }) {
   const [prompt, setPrompt] = useState(question.prompt);
   const [answer, setAnswer] = useState(question.correct_answer ?? "");
@@ -321,6 +338,12 @@ function QuestionCard({
       </div>
 
       <QuestionAsset asset={question.asset} />
+
+      <AssetEditor
+        questionPrompt={prompt}
+        asset={question.asset}
+        onSave={onSaveAsset}
+      />
 
       <div className="space-y-2">
         <Label>نص السؤال</Label>

@@ -54,6 +54,7 @@ export function buildGeneratePrompt(input: {
   typeMix: Record<string, number>;
   customPrompt?: string | undefined;
   avoid?: string[] | undefined;
+  figureStyle?: FigureStyle | undefined;
 }): ChatMessage[] {
   const mix = Object.entries(input.typeMix)
     .filter(([, n]) => n > 0)
@@ -70,7 +71,7 @@ export function buildGeneratePrompt(input: {
     },
     {
       role: "user",
-      content: `المحتوى:\n"""\n${input.text}\n"""\n\nالمطلوب: ${input.count} سؤالًا بلغة ${input.language === "en" ? "الإنجليزية" : "العربية"}، مستوى الصعوبة: ${input.difficulty}.\nتوزيع الأنواع: ${mix || "وزّعها بشكل متوازن"}.\n${input.customPrompt ? `تعليمات المستخدم (أعلى أولوية، التزم بها حرفيًا): ${input.customPrompt}\n` : ""}${avoidList.length ? `أسئلة موجودة سابقًا، لا تكرّرها ولا تعد صياغتها:\n- ${avoidList.join("\n- ")}\n` : ""}\n${SCHEMA_NOTE}`,
+      content: `المحتوى:\n"""\n${input.text}\n"""\n\nالمطلوب: ${input.count} سؤالًا بلغة ${input.language === "en" ? "الإنجليزية" : "العربية"}، مستوى الصعوبة: ${input.difficulty}.\nتوزيع الأنواع: ${mix || "وزّعها بشكل متوازن"}.\n${input.customPrompt ? `تعليمات المستخدم (أعلى أولوية، التزم بها حرفيًا): ${input.customPrompt}\n` : ""}${avoidList.length ? `أسئلة موجودة سابقًا، لا تكرّرها ولا تعد صياغتها:\n- ${avoidList.join("\n- ")}\n` : ""}\n${SCHEMA_NOTE}\n\n${figureStyleNote(input.figureStyle ?? DEFAULT_FIGURE_STYLE)}`,
     },
   ];
 }
@@ -81,12 +82,13 @@ export function buildSinglePrompt(input: {
   difficulty: string;
   language: string;
   avoid?: string | undefined;
+  figureStyle?: FigureStyle | undefined;
 }): ChatMessage[] {
   return [
     { role: "system", content: "أنت خبير إعداد اختبارات. تُجيب بـ JSON صالح فقط." },
     {
       role: "user",
-      content: `المحتوى:\n"""\n${input.text}\n"""\n\nأنشئ سؤالًا واحدًا فقط من نوع ${input.type} بمستوى ${input.difficulty} بلغة ${input.language === "en" ? "الإنجليزية" : "العربية"}.\n${input.avoid ? `لا تكرر هذا السؤال: ${input.avoid}\n` : ""}\n${SCHEMA_NOTE}`,
+      content: `المحتوى:\n"""\n${input.text}\n"""\n\nأنشئ سؤالًا واحدًا فقط من نوع ${input.type} بمستوى ${input.difficulty} بلغة ${input.language === "en" ? "الإنجليزية" : "العربية"}.\n${input.avoid ? `لا تكرر هذا السؤال: ${input.avoid}\n` : ""}\n${SCHEMA_NOTE}\n\n${figureStyleNote(input.figureStyle ?? DEFAULT_FIGURE_STYLE)}`,
     },
   ];
 }
