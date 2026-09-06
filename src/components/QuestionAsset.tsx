@@ -1,9 +1,28 @@
 import { normalizeAsset } from "@/lib/question-asset";
 
-/** Renders the table or figure attached to a question, above its options. */
+/** Renders the table, figure or picture attached to a question, above its options. */
 export function QuestionAsset({ asset }: { asset: unknown }) {
   const data = normalizeAsset(asset);
   if (!data) return null;
+
+  if (data.kind === "image") {
+    return (
+      <figure className="rounded-xl border border-border bg-card p-3">
+        <img
+          src={data.dataUrl}
+          alt={data.caption ?? "صورة مرفقة بالسؤال"}
+          className="mx-auto max-h-80 w-auto max-w-full rounded-lg"
+        />
+        {data.caption ? (
+          <figcaption className="mt-2 text-center text-xs text-muted-foreground">
+            {data.caption}
+          </figcaption>
+        ) : null}
+      </figure>
+    );
+  }
+
+
 
   if (data.kind === "table") {
     return (
