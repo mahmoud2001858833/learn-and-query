@@ -5,6 +5,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { FileUp, Library, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { AppHeader } from "@/components/AppHeader";
+import { FigureStyleFields } from "@/components/FigureStyleFields";
+import { DEFAULT_FIGURE_STYLE, type FigureStyle } from "@/lib/question-asset";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -70,6 +72,7 @@ function NewQuiz() {
   const [difficulty, setDifficulty] = useState("متوسط");
   const [language, setLanguage] = useState("ar");
   const [customPrompt, setCustomPrompt] = useState("");
+  const [figureStyle, setFigureStyle] = useState<FigureStyle>(DEFAULT_FIGURE_STYLE);
   const [mix, setMix] = useState<Record<string, number>>({
     mcq: 10,
     true_false: 2,
@@ -221,6 +224,7 @@ function NewQuiz() {
             typeMix: batch.typeMix,
             customPrompt: customPrompt.trim() || undefined,
             avoid: collected.map((q) => q.prompt),
+            figureStyle,
           },
         });
         collected.push(...questions);
@@ -409,6 +413,8 @@ function NewQuiz() {
               الأعداد الكبيرة تُولّد على دفعات تلقائيًا لتجنّب التكرار، وقد تستغرق وقتًا أطول.
             </p>
           </div>
+
+          <FigureStyleFields style={figureStyle} onChange={setFigureStyle} />
 
           <div className="space-y-2">
             <Label>طلب حر (الذكاء الاصطناعي يلتزم به أولًا)</Label>
