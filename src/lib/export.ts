@@ -9,9 +9,15 @@ import {
   TableRow,
   TableCell,
   WidthType,
+  ImageRun,
 } from "docx";
 import { saveAs } from "file-saver";
-import { normalizeAsset, type QuestionAssetData } from "./question-asset";
+import {
+  normalizeAsset,
+  type FigureAsset,
+  type QuestionAssetData,
+  type TableAsset,
+} from "./question-asset";
 
 export type ExportQuestion = {
   position: number;
@@ -49,7 +55,44 @@ function line(text: string, bold = false) {
   });
 }
 
-function docxAsset(asset: QuestionAssetData): (Paragraph | Table)[] {
+/** Decodes an inlined picture into bytes + display size for Word. */
+async function imageForDocx(dataUrl: string) {
+  const [meta, base64] = dataUrl.split(",");
+  const binary = atob(base64 ?? "");
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  const size = await new Promise<{ w: number; h: number }>((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+    img.onerror = () => resolve({ w: 400, h: 260 });
+    img.src = dataUrl;
+  });
+  const width = Math.min(420, size.w);
+  const height = Math.round((width * size.h) / (size.w || 1));
+  const type = /png/i.test(meta ?? "") ? ("png" as const) : ("jpg" as const);
+  return { bytes, width, height, type };
+}
+
+async function docxAsset(asset: QuestionAssetData): Promise<(Paragraph | Table)[]> {
+  if (asset.kind === "image") {
+    try {
+      const { bytes, width, height, type } = await imageForDocx(asset.dataUrl);
+      const picture = new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 120 },
+        children: [
+          new ImageRun({ data: bytes, type, transformation: { width, height } }),
+        ],
+      });
+      return asset.caption ? [picture, line(`   ${asset.caption}`)] : [picture];
+    } catch {
+      return [line("   [صورة مرفقة — انظر نسخة PDF]")];
+    }
+  }
+  return docxNonImageAsset(asset);
+}
+
+function docxNonImageAsset(asset: TableAsset | FigureAsset): (Paragraph | Table)[] {
   if (asset.kind === "table") {
     const rows = asset.headers.some((h) => h.trim())
       ? [asset.headers, ...asset.rows]
@@ -90,10 +133,11 @@ export async function exportQuizDocx(
 ) {
   const body: (Paragraph | Table)[] = [heading(withAnswers ? `${title} — ورقة الإجابات` : title)];
 
-  questions.forEach((q, i) => {
+  for (let i = 0; i < questions.length; i++) {
+    const q = questions[i]!;
     body.push(line(`${i + 1}. ${q.prompt}  (${TYPE_LABELS[q.type] ?? q.type})`, true));
     const asset = normalizeAsset(q.asset);
-    if (asset) body.push(...docxAsset(asset));
+    if (asset) body.push(...(await docxAsset(asset)));
     (q.options ?? []).forEach((opt, oi) => {
       body.push(line(`   ${String.fromCharCode(1571 + oi)}) ${opt}`));
     });
@@ -104,7 +148,7 @@ export async function exportQuizDocx(
       body.push(line("   ......................................................"));
     }
     body.push(line(""));
-  });
+  }
 
   if (branding) body.push(line("أُنشئت بواسطة منصة اسأل كتابك"));
 
@@ -222,6 +266,9 @@ function assetHtml(asset: QuestionAssetData | null): string {
   const caption = asset.caption
     ? `<div class="cap">${escapeHtml(asset.caption)}</div>`
     : "";
+  if (asset.kind === "image") {
+    return `<div class="asset"><div class="fig"><img src="${asset.dataUrl}" alt="" /></div>${caption}</div>`;
+  }
   if (asset.kind === "table") {
     const head = asset.headers.some((h) => h.trim())
       ? `<thead><tr>${asset.headers.map((h) => `<th>${escapeHtml(h)}</th>`).join("")}</tr></thead>`
@@ -259,6 +306,7 @@ const SHEET_CSS = `
 .sheet .tbl th{background:#eef2fb;font-weight:700;color:#152040}
 .sheet .tbl tbody tr:nth-child(even) td{background:#f8fafd}
 .sheet .fig{text-align:center;background:#fff;border-radius:8px;padding:6px}
+.sheet .fig img{max-width:430px;width:auto;max-height:330px;height:auto;display:block;margin:0 auto;border-radius:6px}
 .sheet .fig svg{max-width:430px;width:100%;height:auto;display:block;margin:0 auto}
 .sheet .cap{font-size:11.5px;color:#6b7492;text-align:center;margin-top:7px}
 .sheet .lines{margin:11px 37px 0 0}
